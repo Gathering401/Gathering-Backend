@@ -16,6 +16,7 @@ namespace GatheringAPI.Controllers
     {
         private readonly GatheringDbContext _context;
 
+
         public EventController(GatheringDbContext context)
         {
             _context = context;
