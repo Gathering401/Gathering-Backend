@@ -91,6 +91,14 @@ namespace GatheringAPI.Services
             _context.GroupEvents.Add(groupEvent);
             await _context.SaveChangesAsync();
         }
+
+        public async Task DeleteEventAsync(long groupId, long eventId)
+        {
+            var groupEvent = await _context.GroupEvents.FindAsync(groupId, eventId);
+
+            _context.GroupEvents.Remove(groupEvent);
+            await _context.SaveChangesAsync();
+        }
     }
 
     public interface IGroup
@@ -106,5 +114,7 @@ namespace GatheringAPI.Services
         Task<bool> UpdateAsync(Group group);
 
         Task AddEventAsync(long groupId, long eventId);
+
+        Task DeleteEventAsync(long groupId, long eventId);
     }
 }

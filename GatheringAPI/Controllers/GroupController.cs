@@ -84,5 +84,13 @@ namespace GatheringAPI.Controllers
             await repository.AddEventAsync(groupId, eventId);
             return CreatedAtAction(nameof(AddEvent), new { groupId, eventId }, null);
         }
+
+        // DELETE: api/Group/5/Event/3
+        [HttpDelete("{groupId}/Event/{eventId}")]
+        public async Task<ActionResult> DeleteEvent(long groupId, long eventId)
+        {
+            await repository.DeleteEventAsync(groupId, eventId);
+            return Ok();
+        }
     }
 }
