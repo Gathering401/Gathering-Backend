@@ -92,5 +92,13 @@ namespace GatheringAPI.Controllers
             await repository.DeleteEventAsync(groupId, eventId);
             return Ok();
         }
+
+        // PUT: api/Group/5/Event/3
+        [HttpPut("{groupId}/Event/{eventId}")]
+        public async Task<bool> UpdateEvent(long groupId, Event @event)
+        {
+            bool didUpdate = await repository.UpdateEventAsync(groupId, @event);
+            return didUpdate;
+        }
     }
 }

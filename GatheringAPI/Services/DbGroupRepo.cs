@@ -99,6 +99,38 @@ namespace GatheringAPI.Services
             _context.GroupEvents.Remove(groupEvent);
             await _context.SaveChangesAsync();
         }
+
+        public async Task<bool> UpdateEventAsync(long groupId, Event @event)
+        {
+            _context.Entry(@event).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch
+            {
+                if (!await EventExists(groupId, @event))
+                {
+                    return false;
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            return true;
+        }
+
+        private async Task<bool> EventExists(long groupId, Event @event)
+        {
+            var @group = await _context.Groups.FindAsync(groupId);
+            if (@group.GroupEvents.Where(ge => ge.EventId == @event.EventId).Count() == 0)
+            {
+                return false;
+            }
+            return true;
+        }
     }
 
     public interface IGroup
@@ -106,7 +138,7 @@ namespace GatheringAPI.Services
         Task<ActionResult<IEnumerable<Group>>> GetAllAsync();
 
         Task<ActionResult<Group>> FindAsync(long id);
-
+        Task<bool> UpdateEventAsync(long groupId, Event @event);
         Task CreateAsync(Group group);
 
         Task<Group> DeleteAsync(long id);
