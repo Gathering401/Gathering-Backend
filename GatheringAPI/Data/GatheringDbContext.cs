@@ -12,6 +12,12 @@ namespace GatheringAPI.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Group>()
+                .HasData(
+                new Group { GroupId = 1, GroupName = "Odysseus", Description = "HI", Location = "Remote" }
+                );
+
         }
         public DbSet<Group> Groups { get; set; }
         public DbSet<User> Users { get; set; }
