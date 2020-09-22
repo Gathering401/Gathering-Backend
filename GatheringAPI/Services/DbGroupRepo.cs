@@ -41,7 +41,7 @@ namespace GatheringAPI.Services
 
         public async Task<ActionResult<Group>> FindAsync(long id)
         {
-            var @group = await _context.Groups.FindAsync();
+            var @group = await _context.Groups.FindAsync(id);
             return @group;
         }
 
@@ -74,7 +74,7 @@ namespace GatheringAPI.Services
 
         private bool GroupExists(long id)
         {
-            return _context.Groups.Any(e => e.GroupId == id);
+            return _context.Groups.Any(g => g.GroupId == id);
         }
 
     }
