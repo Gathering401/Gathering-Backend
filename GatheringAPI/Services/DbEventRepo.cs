@@ -35,6 +35,35 @@ namespace GatheringAPI.Services
 
             return @event;
         }
+
+        public async Task<bool> UpdateByIdAsync(Event @event)
+        {
+            _context.Entry(@event).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!await EventExists(@event.EventId))
+                {
+                    return false;
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return true;
+        }
+
+        private async Task<bool> EventExists(long id)
+        {
+            return await _context.Events.AnyAsync(e => e.EventId == id);
+        }
     }
 
     public interface IEvent
@@ -42,5 +71,8 @@ namespace GatheringAPI.Services
         Task<ActionResult<IEnumerable<Event>>> GetAllAsync();
 
         Task<ActionResult<Event>> GetOneByIdAsync(long id);
+
+        Task<bool> UpdateByIdAsync(Event @event);
+
     }
 }

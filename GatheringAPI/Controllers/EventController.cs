@@ -56,23 +56,10 @@ namespace GatheringAPI.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(@event).State = EntityState.Modified;
+            bool DidUpdate = await repository.UpdateByIdAsync(@event);
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!EventExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+            if (!DidUpdate)
+                return NotFound();
 
             return NoContent();
         }
