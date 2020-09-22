@@ -47,7 +47,10 @@ namespace GatheringAPI.Services
 
         public async Task<ActionResult<IEnumerable<Group>>> GetAllAsync()
         {
-            return await _context.Groups.ToListAsync();
+            return await _context.Groups
+                .Include(g => g.GroupEvents)
+                .ThenInclude(ge => ge.Event)
+                .ToListAsync();
         }
 
         public async Task<bool> UpdateAsync(Group @group)
@@ -77,7 +80,7 @@ namespace GatheringAPI.Services
             return _context.Groups.Any(g => g.GroupId == id);
         }
 
-        public async Task AddEventAsync(long eventId, long groupId)
+        public async Task AddEventAsync(long groupId, long eventId)
         {
             var groupEvent = new GroupEvent
             {
@@ -102,6 +105,6 @@ namespace GatheringAPI.Services
 
         Task<bool> UpdateAsync(Group group);
 
-        Task AddEventAsync(long eventId, long groupId);
+        Task AddEventAsync(long groupId, long eventId);
     }
 }
