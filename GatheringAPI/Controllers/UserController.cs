@@ -84,14 +84,12 @@ namespace GatheringAPI.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<User>> DeleteUser(long id)
         {
-            var user = await _context.Users.FindAsync(id);
+            var user = await repository.DeleteAsync(id);
+
             if (user == null)
             {
                 return NotFound();
             }
-
-            _context.Users.Remove(user);
-            await _context.SaveChangesAsync();
 
             return user;
         }

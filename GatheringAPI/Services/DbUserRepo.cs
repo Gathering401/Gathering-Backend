@@ -17,24 +17,37 @@ namespace GatheringAPI.Services
         {
             _context = context;
         }
-
-        public async Task CreateAsync(User user)
+        // GET: api/User
+        public async Task<ActionResult<IEnumerable<User>>> GetAllAsync()
         {
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
-
-            
+            return await _context.Users.ToListAsync();
         }
-
+        // GET: api/User/5
         public async Task<ActionResult<User>> FindAsync(long id)
         {
             var user = await _context.Users.FindAsync(id);
             return user;
         }
-
-        public async Task<ActionResult<IEnumerable<User>>> GetAllAsync()
+        // POST: api/User
+        public async Task CreateAsync(User user)
         {
-            return await _context.Users.ToListAsync();
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+        }
+        // DELETE: api/User/5
+        public async Task<User> DeleteAsync(long id)
+        {
+            var user = await _context.Users.FindAsync(id);
+
+            if (user == null)
+            {
+                return null;
+            }
+
+            _context.Users.Remove(user);
+            await _context.SaveChangesAsync();
+
+            return user;
         }
 
         private bool UserExists(long id)
@@ -47,6 +60,7 @@ namespace GatheringAPI.Services
         Task<ActionResult<IEnumerable<User>>> GetAllAsync();
         Task<ActionResult<User>> FindAsync(long id);
         Task CreateAsync(User user);
+        Task<User> DeleteAsync(long id);
     }
 
     
