@@ -18,16 +18,16 @@ namespace GatheringAPI.Controllers
         private readonly GatheringDbContext _context;
         private readonly IGroup repository;
 
-        public GroupController(GatheringDbContext context)
+        public GroupController(IGroup groupRepository)
         {
-            _context = context;
+            repository = groupRepository;
         }
 
         // GET: api/Group
         [HttpGet]
-        public IEnumerable<Group> GetGroups()
+        public async Task<ActionResult<IEnumerable<Group>>> GetGroups()
         {
-            return repository.GetAllAsync();
+            return await repository.GetAllAsync();
         }
 
         // GET: api/Group/5

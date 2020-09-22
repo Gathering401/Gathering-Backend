@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using GatheringAPI.Data;
 using GatheringAPI.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace GatheringAPI.Services
 {
@@ -16,9 +17,9 @@ namespace GatheringAPI.Services
             _context = context;
         }
 
-        public Task<ActionResult<IEnumerable<Group>>> GetAllAsync()
+        public async Task<ActionResult<IEnumerable<Group>>> GetAllAsync()
         {
-            throw new NotImplementedException();
+            return await _context.Groups.ToListAsync();
         }
     }
 
