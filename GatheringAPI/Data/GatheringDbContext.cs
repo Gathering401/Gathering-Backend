@@ -1,8 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using GatheringAPI.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace GatheringAPI.Data
 {
@@ -16,5 +13,6 @@ namespace GatheringAPI.Data
         {
             base.OnModelCreating(modelBuilder);
         }
+        public DbSet<Group> Groups { get; set; }
     }
 }
