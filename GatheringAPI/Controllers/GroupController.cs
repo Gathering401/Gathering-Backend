@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using GatheringAPI.Data;
 using GatheringAPI.Models;
+using GatheringAPI.Services;
 
 namespace GatheringAPI.Controllers
 {
@@ -15,6 +16,7 @@ namespace GatheringAPI.Controllers
     public class GroupController : ControllerBase
     {
         private readonly GatheringDbContext _context;
+        private readonly IGroup repository;
 
         public GroupController(GatheringDbContext context)
         {
@@ -23,9 +25,9 @@ namespace GatheringAPI.Controllers
 
         // GET: api/Group
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Group>>> GetGroups()
+        public IEnumerable<Group> GetGroups()
         {
-            return await _context.Groups.ToListAsync();
+            return repository.GetAllAsync();
         }
 
         // GET: api/Group/5
