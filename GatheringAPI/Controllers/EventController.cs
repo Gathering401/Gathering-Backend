@@ -35,7 +35,7 @@ namespace GatheringAPI.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Event>> GetEvent(long id)
         {
-            var @event = await _context.Events.FindAsync(id);
+            var @event = await repository.GetOneByIdAsync(id);
 
             if (@event == null)
             {

@@ -24,10 +24,23 @@ namespace GatheringAPI.Services
             return await _context.Events.ToListAsync();
         }
 
+        public async Task<ActionResult<Event>> GetOneByIdAsync(long id)
+        {
+            var @event = await _context.Events.FindAsync(id);
+
+            if (@event == null)
+            {
+                return null;
+            }
+
+            return @event;
+        }
     }
 
     public interface IEvent
     {
         Task<ActionResult<IEnumerable<Event>>> GetAllAsync();
+
+        Task<ActionResult<Event>> GetOneByIdAsync(long id);
     }
 }
