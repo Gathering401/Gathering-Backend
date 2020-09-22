@@ -16,10 +16,9 @@ namespace GatheringAPI.Models
         // public Repeat EventRepeat { get; set; }
 
         [Required]
-        [Column(TypeName = "DATE")]
         public DateTime Start { get; set; }
 
-        public DateTime End { get; set; }
+        public DateTime? End { get; set; }
 
         // Stretchy Goaly
         // public DayOfWeek Weekday { get; set; }

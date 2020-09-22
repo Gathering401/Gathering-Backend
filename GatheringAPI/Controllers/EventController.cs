@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using GatheringAPI.Data;
 using GatheringAPI.Models;
+using GatheringAPI.Services;
 
 namespace GatheringAPI.Controllers
 {
@@ -15,10 +16,11 @@ namespace GatheringAPI.Controllers
     public class EventController : ControllerBase
     {
         private readonly GatheringDbContext _context;
+        private readonly IEvent repository;
 
-
-        public EventController(GatheringDbContext context)
+        public EventController(GatheringDbContext context, IEvent repository)
         {
+            this.repository = repository;
             _context = context;
         }
 
@@ -26,7 +28,7 @@ namespace GatheringAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Event>>> GetEvents()
         {
-            return await _context.Events.ToListAsync();
+            return await repository.GetAllAsync();
         }
 
         // GET: api/Event/5
