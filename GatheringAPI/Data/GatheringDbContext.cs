@@ -1,5 +1,6 @@
 ﻿using GatheringAPI.Models;
 using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace GatheringAPI.Data
 {
@@ -16,6 +17,10 @@ namespace GatheringAPI.Data
             modelBuilder.Entity<Group>()
                 .HasData(
                 new Group { GroupId = 1, GroupName = "Odysseus", Description = "HI", Location = "Remote" }
+                );
+            modelBuilder.Entity<User>()
+                .HasData(
+                new User { UserId = 1, FirstName = "Bob", LastName = "Bobberton", Email = "Bobby@example.com", BirthDate = new DateTime(1990,1,1) }
                 );
 
         }
