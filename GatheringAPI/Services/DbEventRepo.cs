@@ -9,10 +9,10 @@ using System.Threading.Tasks;
 
 namespace GatheringAPI.Services
 {
-    public class DbEventRepo: IEvent
+    public class DbEventRepo : IEvent
     {
         private readonly GatheringDbContext _context;
-       
+
 
         public DbEventRepo(GatheringDbContext context)
         {
