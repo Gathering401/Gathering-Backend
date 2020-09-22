@@ -4,14 +4,16 @@ using GatheringAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace GatheringAPI.Migrations
 {
     [DbContext(typeof(GatheringDbContext))]
-    partial class GatheringDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200922154522_EventModel")]
+    partial class EventModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
