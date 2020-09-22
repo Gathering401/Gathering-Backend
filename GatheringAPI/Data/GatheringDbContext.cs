@@ -15,12 +15,18 @@ namespace GatheringAPI.Data
 
             modelBuilder.Entity<Group>()
                 .HasData(
-                new Group { GroupId = 1, GroupName = "Odysseus", Description = "HI", Location = "Remote" }
+                    new Group { GroupId = 1, GroupName = "Odysseus", Description = "HI", Location = "Remote" }
                 );
-
+            modelBuilder.Entity<GroupEvent>()
+                .HasKey(groupEvent => new
+                {
+                    groupEvent.GroupId,
+                    groupEvent.EventId,
+                });
         }
         public DbSet<Group> Groups { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Event> Events { get; set; }
+        public DbSet<GroupEvent> GroupEvents { get; set; }
     }
 }

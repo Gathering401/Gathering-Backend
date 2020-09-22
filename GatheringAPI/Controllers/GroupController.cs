@@ -48,10 +48,10 @@ namespace GatheringAPI.Controllers
 
             bool didUpdate = await repository.UpdateAsync(@group);
 
-           if (!didUpdate)
-           {
-             return NotFound();
-           }
+            if (!didUpdate)
+            {
+                return NotFound();
+            }
 
             return NoContent();
         }
@@ -75,6 +75,14 @@ namespace GatheringAPI.Controllers
                 return NotFound();
             }
             return @group;
+        }
+
+        // POST: api/Group/5/Event/3
+        [HttpPost("{groupId}/Event/{eventId}")]
+        public async Task<ActionResult> AddEvent(long groupId, long eventId)
+        {
+            await repository.AddEventAsync(groupId, eventId);
+            return CreatedAtAction(nameof(AddEvent), new { groupId, eventId }, null);
         }
     }
 }
