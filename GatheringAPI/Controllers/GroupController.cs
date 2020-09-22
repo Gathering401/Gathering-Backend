@@ -15,7 +15,7 @@ namespace GatheringAPI.Controllers
     [ApiController]
     public class GroupController : ControllerBase
     {
-        private readonly GatheringDbContext _context;
+        //private readonly GatheringDbContext _context;
         private readonly IGroup repository;
 
         public GroupController(IGroup groupRepository)
@@ -34,19 +34,10 @@ namespace GatheringAPI.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Group>> GetGroup(long id)
         {
-            var @group = await _context.Groups.FindAsync(id);
-
-            if (@group == null)
-            {
-                return NotFound();
-            }
-
-            return @group;
+            return await repository.FindAsync(id);
         }
 
         // PUT: api/Group/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for
-        // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPut("{id}")]
         public async Task<IActionResult> PutGroup(long id, Group @group)
         {
@@ -55,36 +46,21 @@ namespace GatheringAPI.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(@group).State = EntityState.Modified;
+            bool didUpdate = await repository.UpdateAsync(@group);
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!GroupExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+           if (!didUpdate)
+           {
+             return NotFound();
+           }
 
             return NoContent();
         }
 
         // POST: api/Group
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for
-        // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPost]
         public async Task<ActionResult<Group>> PostGroup(Group @group)
         {
-            _context.Groups.Add(@group);
-            await _context.SaveChangesAsync();
-
+            await repository.CreateAsync(@group);
             return CreatedAtAction("GetGroup", new { id = @group.GroupId }, @group);
         }
 
@@ -92,21 +68,13 @@ namespace GatheringAPI.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<Group>> DeleteGroup(long id)
         {
-            var @group = await _context.Groups.FindAsync(id);
+            var @group = await repository.DeleteAsync(id);
+
             if (@group == null)
             {
                 return NotFound();
             }
-
-            _context.Groups.Remove(@group);
-            await _context.SaveChangesAsync();
-
             return @group;
-        }
-
-        private bool GroupExists(long id)
-        {
-            return _context.Groups.Any(e => e.GroupId == id);
         }
     }
 }

@@ -36,7 +36,11 @@ namespace GatheringAPI
             });
 
             services.AddTransient<IGroup, DbGroupRepo>();
+<<<<<<< HEAD
             services.AddTransient<IUser, DbUserRepo> ();
+=======
+            services.AddTransient<IEvent, DbEventRepo>();
+>>>>>>> 355e4bf9b3131fe18f701ee63cffc106e1190e6a
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
