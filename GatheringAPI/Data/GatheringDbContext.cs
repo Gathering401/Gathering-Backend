@@ -14,5 +14,6 @@ namespace GatheringAPI.Data
             base.OnModelCreating(modelBuilder);
         }
         public DbSet<Group> Groups { get; set; }
+        public DbSet<User> Users { get; set; }
     }
 }
