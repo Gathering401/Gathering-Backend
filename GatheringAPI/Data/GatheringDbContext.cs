@@ -7,7 +7,7 @@ using System;
 
 namespace GatheringAPI.Data
 {
-    public class GatheringDbContext : IdentityDbContext<User,IdentityRole<long>,long>
+    public class GatheringDbContext : IdentityDbContext<User, IdentityRole<long>, long>
     {
         public GatheringDbContext(DbContextOptions options) : base(options)
         {
@@ -28,9 +28,21 @@ namespace GatheringAPI.Data
                     groupEvent.GroupId,
                     groupEvent.EventId,
                 });
+            modelBuilder.Entity<EventInvite>()
+                .HasKey(eventInvite => new
+                {
+                    eventInvite.UserId,
+                    eventInvite.EventId
+                });
+            modelBuilder.Entity<GroupUser>()
+                .HasKey(groupUser => new
+                {
+                    groupUser.GroupId,
+                    groupUser.UserId
+                });
         }
         public DbSet<Group> Groups { get; set; }
-        
+
         public DbSet<Event> Events { get; set; }
         public DbSet<GroupEvent> GroupEvents { get; set; }
     }

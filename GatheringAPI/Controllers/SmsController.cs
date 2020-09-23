@@ -20,6 +20,7 @@ namespace GatheringAPI.Controllers
 
         public string _accountSid = null;
         public string _authToken = null;
+        public string _phone = null;
 
         // POST: Via Text Message to Twilio #
 
@@ -44,9 +45,10 @@ namespace GatheringAPI.Controllers
         // To RSVP as attend, respond YES. For not attending, respond NO. For unsure, respond MAYBE.
 
         // GET: api/sms/
-        [HttpGet("api/sms/send/{messageBody}/from/{twilioNum}/to/{userNum}")]
-        public void SendMessage(string messageBody, string twilioNum, string userNum)
+        [HttpGet("api/sms/send/{messageBody}/to/{userNum}")]
+        public void SendMessage(string messageBody, string userNum)
         {
+            _phone = Configuration["Twilio:phone"];
             _accountSid = Configuration["Twilio:accountSid"];
             _authToken = Configuration["Twilio:authToken"];
 
@@ -54,7 +56,7 @@ namespace GatheringAPI.Controllers
 
             var message = MessageResource.Create(
                 body: messageBody,
-                from: new Twilio.Types.PhoneNumber($"+1{twilioNum}"),
+                from: new Twilio.Types.PhoneNumber($"+1{_phone}"),
                 to: new Twilio.Types.PhoneNumber($"+1{userNum}")
                 );
 
