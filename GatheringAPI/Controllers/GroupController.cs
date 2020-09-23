@@ -33,9 +33,9 @@ namespace GatheringAPI.Controllers
 
         // GET: api/Group/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Group>> GetGroup(long id)
+        public GroupDto GetGroup(long id)
         {
-            return await repository.FindAsync(id);
+            return repository.Find(id);
         }
 
         // PUT: api/Group/5
