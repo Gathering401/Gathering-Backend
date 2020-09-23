@@ -7,7 +7,7 @@ namespace GatheringAPI.Models.Api
 {
     public class UserDto
     {
-        public string Id { get; set; }
+        public long Id { get; set; }
         public string Username { get; set; }
     }
 }

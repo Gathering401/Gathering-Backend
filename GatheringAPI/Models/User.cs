@@ -8,18 +8,8 @@ using System.Threading.Tasks;
 
 namespace GatheringAPI.Models
 {
-    public class User:IdentityUser<long>
+    public class User : IdentityUser<long>
     {
         
-
-        [Required]
-        public string FirstName { get; set; }
-        
-        [Required]
-        public string LastName { get; set; }
-
-        [Column(TypeName = "DATE")] 
-        public DateTime BirthDate { get; set; }
-
     }
 }

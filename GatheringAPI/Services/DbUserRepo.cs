@@ -1,6 +1,9 @@
 ﻿using GatheringAPI.Data;
 using GatheringAPI.Models;
+using GatheringAPI.Models.Api;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -11,57 +14,62 @@ namespace GatheringAPI.Services
 {
     public class DbUserRepo : IUser
     {
-        private readonly GatheringDbContext _context;
+        private readonly UserManager<User> userManager;
 
-        public DbUserRepo(GatheringDbContext context)
+        public async Task<UserDto> Authenticate(string userName, string password)
         {
-            _context = context;
-        }
-        // GET: api/User
-        public async Task<ActionResult<IEnumerable<User>>> GetAllAsync()
-        {
-            return await _context.Users.ToListAsync();
-        }
-        // GET: api/User/5
-        public async Task<ActionResult<User>> FindAsync(long id)
-        {
-            var user = await _context.Users.FindAsync(id);
-            return user;
-        }
-        // POST: api/User
-        public async Task CreateAsync(User user)
-        {
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
-        }
-        // DELETE: api/User/5
-        public async Task<User> DeleteAsync(long id)
-        {
-            var user = await _context.Users.FindAsync(id);
-
-            if (user == null)
+            var user = await userManager.FindByNameAsync(userName);
+            if (await userManager.CheckPasswordAsync(user, password))
             {
-                return null;
+                return new UserDto
+                {
+                    Id = user.Id,
+                    Username = user.UserName,
+
+
+                };
             }
-
-            _context.Users.Remove(user);
-            await _context.SaveChangesAsync();
-
-            return user;
+            return null;
         }
 
-        private bool UserExists(long id)
+        public async Task<UserDto> Register(RegisterData data, ModelStateDictionary modelState)
         {
-            return _context.Users.Any(e => e.Id == id);
+            var user = new User
+            {
+                UserName = data.Username,
+                Email = data.Email
+            };
+
+            var result = await userManager.CreateAsync(user, data.Password);
+            if(result.Succeeded)
+            {
+                await userManager.AddToRolesAsync(user, data.Roles);
+                return new UserDto
+                {
+                    Id = user.Id,
+                    Username = user.UserName,
+
+                };
+            }
+            foreach(var error in result.Errors)
+            {
+                var errorKey =
+                    error.Code.Contains("Password") ? nameof(data.Password) :
+                    error.Code.Contains("Email") ? nameof(data.Email) :
+                    error.Code.Contains("UserName") ? nameof(data.Password) :
+                    "";
+                modelState.AddModelError(errorKey, error.Description);
+            }
+            return null;
+
+
         }
     }
     public interface IUser
     {
-        Task<ActionResult<IEnumerable<User>>> GetAllAsync();
-        Task<ActionResult<User>> FindAsync(long id);
-        Task CreateAsync(User user);
-        Task<User> DeleteAsync(long id);
-    }
+        Task<UserDto> Authenticate(string userName, string password);
+        Task<UserDto> Register(RegisterData data, ModelStateDictionary modelState);
+    };
 
     
 }

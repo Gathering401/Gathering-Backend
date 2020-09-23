@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using GatheringAPI.Data;
 using GatheringAPI.Models;
 using GatheringAPI.Services;
+using GatheringAPI.Models.Api;
 
 namespace GatheringAPI.Controllers
 {
@@ -15,88 +16,32 @@ namespace GatheringAPI.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        private readonly GatheringDbContext _context;
-        private readonly IUser repository;
+        private readonly IUser userService;
 
-        public UserController(IUser userRepo)
+        public UserController(IUser userService)
         {
-            repository = userRepo;
+            this.userService = userService;
         }
-
-        // GET: api/User
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> GetUsers()
+        [HttpPost("Register")]
+        public async Task<ActionResult<UserDto>> Register(RegisterData data)
         {
-            return await repository.GetAllAsync();
-        }
-
-        // GET: api/User/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<User>> GetUser(long id)
-        {
-           return await repository.FindAsync(id);
-
-        }
-
-        // PUT: api/User/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for
-        // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutUser(long id, User user)
-        {
-            if (id != user.Id)
+            UserDto user = await userService.Register(data, this.ModelState);
+            if(!ModelState.IsValid)
             {
-                return BadRequest();
+                return BadRequest(new ValidationProblemDetails(ModelState));
             }
-
-            _context.Entry(user).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!UserExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
+            return user;
         }
-
-        // POST: api/User
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for
-        // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
-        [HttpPost]
-        public async Task<ActionResult<User>> PostUser(User user)
+        [HttpPost("Login")]
+        public async Task<ActionResult<UserDto>> Login(LoginData data)
         {
-            await repository.CreateAsync(user);
-            return CreatedAtAction("GetUser", new { id = user.Id }, user);
-        }
-
-        // DELETE: api/User/5
-        [HttpDelete("{id}")]
-        public async Task<ActionResult<User>> DeleteUser(long id)
-        {
-            var user = await repository.DeleteAsync(id);
-
+            var user = await userService.Authenticate(data.Username, data.Password);
             if (user == null)
             {
-                return NotFound();
+                return Unauthorized();
             }
-
             return user;
         }
 
-        private bool UserExists(long id)
-        {
-            return _context.Users.Any(e => e.Id == id);
-        }
     }
 }

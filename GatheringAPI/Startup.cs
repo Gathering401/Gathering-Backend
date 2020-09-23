@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using GatheringAPI.Data;
+using GatheringAPI.Models;
 using GatheringAPI.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -38,6 +40,12 @@ namespace GatheringAPI
                 string connectionString = Configuration.GetConnectionString("DefaultConnection");
                 options.UseSqlServer(connectionString);
             });
+            services.AddIdentity<User, IdentityRole<long>>(options =>
+            {
+                options.User.RequireUniqueEmail = true;
+                options.Password.RequiredLength = 6;
+            })
+            .AddEntityFrameworkStores<GatheringDbContext>();
 
             services.AddTransient<IGroup, DbGroupRepo>();
             services.AddTransient<IUser, DbUserRepo> ();
