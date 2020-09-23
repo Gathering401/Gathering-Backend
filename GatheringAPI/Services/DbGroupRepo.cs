@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using GatheringAPI.Data;
 using GatheringAPI.Models;
+using GatheringAPI.Models.Api;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -45,12 +46,25 @@ namespace GatheringAPI.Services
             return @group;
         }
 
-        public async Task<ActionResult<IEnumerable<Group>>> GetAllAsync()
+        public IEnumerable<GroupDto> GetAll()
         {
-            return await _context.Groups
-                .Include(g => g.GroupEvents)
-                .ThenInclude(ge => ge.Event)
-                .ToListAsync();
+            return _context.Groups
+                .Select(@group => new GroupDto
+                {
+                    GroupName = group.GroupName,
+                    Description = group.Description,
+                    GroupEvents = group.GroupEvents
+                    .Select(e => new GroupEventDto
+                    {
+                        EventName = e.Event.EventName,
+                        Start = e.Event.Start,
+                        End = e.Event.End,
+                        DayOfMonth = e.Event.DayOfMonth,
+                        Cost = e.Event.Cost,
+                        Location = e.Event.Location,
+
+                    }).ToList(),
+                });
         }
 
         public async Task<bool> UpdateAsync(Group @group)
@@ -135,7 +149,7 @@ namespace GatheringAPI.Services
 
     public interface IGroup
     {
-        Task<ActionResult<IEnumerable<Group>>> GetAllAsync();
+        IEnumerable<GroupDto> GetAll();
 
         Task<ActionResult<Group>> FindAsync(long id);
         Task<bool> UpdateEventAsync(long groupId, Event @event);

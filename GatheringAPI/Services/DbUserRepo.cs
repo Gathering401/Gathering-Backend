@@ -30,8 +30,6 @@ namespace GatheringAPI.Services
                 {
                     Id = user.Id,
                     Username = user.UserName,
-
-
                 };
             }
             return null;
@@ -41,13 +39,12 @@ namespace GatheringAPI.Services
         {
             var user = new User
             {
-
                 FirstName = data.FirstName,
                 LastName = data.LastName,
                 BirthDate = data.BirthDate,
                 UserName = data.Username,
                 PhoneNumber = data.PhoneNumber,
-                Email = data.Email
+                Email = data.Email,
             };
 
             var result = await userManager.CreateAsync(user, data.Password);

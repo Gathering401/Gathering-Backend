@@ -14,6 +14,7 @@ namespace GatheringAPI.Models.Api
 
         [Required]
         public string LastName { get; set; }
+
         [Required]
         public string Username { get; set; }
 
@@ -22,11 +23,13 @@ namespace GatheringAPI.Models.Api
 
         [Required]
         public string Email { get; set; }
+
         [Required]
         public string PhoneNumber { get; set; }
+
         [Required]
-        
         public DateTime BirthDate { get; set; }
+
         public List<string> Roles { get; set; }
     }
 }
