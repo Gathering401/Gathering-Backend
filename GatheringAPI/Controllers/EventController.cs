@@ -8,6 +8,9 @@ using Microsoft.EntityFrameworkCore;
 using GatheringAPI.Data;
 using GatheringAPI.Models;
 using GatheringAPI.Services;
+using Twilio;
+using Twilio.Rest.Api.V2010.Account;
+using Microsoft.Extensions.Configuration;
 
 namespace GatheringAPI.Controllers
 {
@@ -17,11 +20,13 @@ namespace GatheringAPI.Controllers
     {
         private readonly GatheringDbContext _context;
         private readonly IEvent repository;
+        public IConfiguration Configuration { get; }
 
-        public EventController(GatheringDbContext context, IEvent repository)
+        public EventController(GatheringDbContext context, IEvent repository, IConfiguration configuration)
         {
             this.repository = repository;
             _context = context;
+            Configuration = configuration;
         }
 
         // GET: api/Event
@@ -73,7 +78,36 @@ namespace GatheringAPI.Controllers
             _context.Events.Add(@event);
             await _context.SaveChangesAsync();
 
+            SendInvites(@event);
+
             return CreatedAtAction("GetEvent", new { id = @event.EventId }, @event);
+        }
+
+        public string _accountSid = null;
+        public string _authToken = null;
+        public string _phone = null;
+
+        private void SendInvites(Event @event)
+        {
+            _phone = Configuration["Twilio:phone"];
+            _accountSid = Configuration["Twilio:accountSid"];
+            _authToken = Configuration["Twilio:authToken"];
+
+            TwilioClient.Init(_accountSid, _authToken);
+
+            foreach (var group in @event.InvitedGroups)
+            {
+                foreach (var user in group.GroupUsers)
+                {
+                    var message = MessageResource.Create(
+                        body: $"You've been invited to {@event.EventName}! Please reply with your RSVP - 1 for Yes, 2 for No, 3 for Maybe.",
+                        from: new Twilio.Types.PhoneNumber($"+1{_phone}"),
+                        to: new Twilio.Types.PhoneNumber($"+1{user.Phone}")
+                        );
+
+                    Console.WriteLine(message.Sid);
+                }
+            }
         }
 
         // DELETE: api/Event/5
