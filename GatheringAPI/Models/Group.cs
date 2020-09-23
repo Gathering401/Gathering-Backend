@@ -10,8 +10,7 @@ namespace GatheringAPI.Models
         [Required]
         public string GroupName { get; set; }
 
-        //[Required]
-        //public List<GroupUser> GroupUsers { get; set; } 
+        public List<GroupUser> GroupUsers { get; set; }
 
         public string Location { get; set; }
 

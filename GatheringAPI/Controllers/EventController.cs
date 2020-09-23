@@ -97,12 +97,12 @@ namespace GatheringAPI.Controllers
 
             foreach (var group in @event.InvitedGroups)
             {
-                foreach (var user in group.GroupUsers)
+                foreach (var user in group.Group.GroupUsers)
                 {
                     var message = MessageResource.Create(
-                        body: $"You've been invited to {@event.EventName}! Please reply with your RSVP - 1 for Yes, 2 for No, 3 for Maybe.",
+                        body: $"You've been invited to {@event.EventName}! Please reply with your RSVP - 1 for Yes, 2 for No, 3 for Maybe. Your response will apply to the most recent invitation without a response.",
                         from: new Twilio.Types.PhoneNumber($"+1{_phone}"),
-                        to: new Twilio.Types.PhoneNumber($"+1{user.Phone}")
+                        to: new Twilio.Types.PhoneNumber($"+1{user.User.PhoneNumber}")
                         );
 
                     Console.WriteLine(message.Sid);
