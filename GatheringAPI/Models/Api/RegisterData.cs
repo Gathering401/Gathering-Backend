@@ -25,7 +25,7 @@ namespace GatheringAPI.Models.Api
         [Required]
         public string PhoneNumber { get; set; }
         [Required]
-        [Column(TypeName = "DATE")]
+        
         public DateTime BirthDate { get; set; }
         public List<string> Roles { get; set; }
     }
