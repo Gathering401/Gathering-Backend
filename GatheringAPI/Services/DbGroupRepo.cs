@@ -60,6 +60,13 @@ namespace GatheringAPI.Services
                             Cost = ge.Event.Cost,
                             Location = ge.Event.Location
                         })
+                        .ToList(),
+                    GroupUsers = group.GroupUsers
+                        .Select(gu => new UserDto
+                        {
+                            Username = gu.User.UserName,
+                            Id = gu.User.Id
+                        })
                         .ToList()
                 })
                 .FirstOrDefault();
@@ -70,20 +77,29 @@ namespace GatheringAPI.Services
             return _context.Groups
                 .Select(@group => new GroupDto
                 {
+                    GroupId = group.GroupId,
                     GroupName = group.GroupName,
                     Description = group.Description,
                     Location = group.Location,
                     GroupEvents = group.GroupEvents
-                    .Select(e => new GroupEventDto
-                    {
-                        EventName = e.Event.EventName,
-                        Start = e.Event.Start,
-                        End = e.Event.End,
-                        DayOfMonth = e.Event.DayOfMonth,
-                        Cost = e.Event.Cost,
-                        Location = e.Event.Location,
+                        .Select(e => new GroupEventDto
+                        {
+                            EventName = e.Event.EventName,
+                            Start = e.Event.Start,
+                            End = e.Event.End,
+                            DayOfMonth = e.Event.DayOfMonth,
+                            Cost = e.Event.Cost,
+                            Location = e.Event.Location,
 
-                    }).ToList(),
+                        })
+                        .ToList(),
+                    GroupUsers = group.GroupUsers
+                        .Select(gu => new UserDto
+                        {
+                            Username = gu.User.UserName,
+                            Id = gu.User.Id
+                        })
+                        .ToList()
                 });
         }
 
