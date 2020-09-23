@@ -40,10 +40,29 @@ namespace GatheringAPI.Services
             return @group;
         }
 
-        public async Task<ActionResult<Group>> FindAsync(long id)
+        public GroupDto Find(long id)
         {
-            var @group = await _context.Groups.FindAsync(id);
-            return @group;
+            return _context.Groups
+                .Where(g => g.GroupId == id)
+                .Select(@group => new GroupDto
+                {
+                    GroupId = group.GroupId,
+                    GroupName = group.GroupName,
+                    Description = group.Description,
+                    Location = group.Location,
+                    GroupEvents = group.GroupEvents
+                        .Select(ge => new GroupEventDto
+                        {
+                            EventName = ge.Event.EventName,
+                            Start = ge.Event.Start,
+                            End = ge.Event.End,
+                            DayOfMonth = ge.Event.DayOfMonth,
+                            Cost = ge.Event.Cost,
+                            Location = ge.Event.Location
+                        })
+                        .ToList()
+                })
+                .FirstOrDefault();
         }
 
         public IEnumerable<GroupDto> GetAll()
@@ -53,6 +72,7 @@ namespace GatheringAPI.Services
                 {
                     GroupName = group.GroupName,
                     Description = group.Description,
+                    Location = group.Location,
                     GroupEvents = group.GroupEvents
                     .Select(e => new GroupEventDto
                     {
@@ -151,7 +171,7 @@ namespace GatheringAPI.Services
     {
         IEnumerable<GroupDto> GetAll();
 
-        Task<ActionResult<Group>> FindAsync(long id);
+        GroupDto Find(long id);
         Task<bool> UpdateEventAsync(long groupId, Event @event);
         Task CreateAsync(Group group);
 
