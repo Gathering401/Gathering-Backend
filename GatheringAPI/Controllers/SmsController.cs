@@ -10,8 +10,6 @@ using Twilio.TwiML;
 
 namespace GatheringAPI.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
     public class SmsController : TwilioController
     {
         public IConfiguration Configuration { get; }
@@ -23,6 +21,7 @@ namespace GatheringAPI.Controllers
         public string _accountSid = null;
         public string _authToken = null;
 
+        [HttpPost("sms")]
         public TwiMLResult Index(SmsRequest incomingMessage)
         {
             var messagingResponse = new MessagingResponse();
@@ -32,7 +31,7 @@ namespace GatheringAPI.Controllers
         }
 
         // GET: api/Sms
-        [HttpGet]
+        /*[HttpGet]
         public void SendMessage()
         {
             _accountSid = Configuration["Twilio:accountSid"];
@@ -48,6 +47,6 @@ namespace GatheringAPI.Controllers
 
 
             Console.WriteLine(message.Sid);
-        }
+        }*/
     }
 }
