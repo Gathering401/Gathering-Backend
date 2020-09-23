@@ -3,14 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using GatheringAPI.Data;
+using GatheringAPI.Models;
 using GatheringAPI.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.OpenApi.Models;
 
 namespace GatheringAPI
 {
@@ -38,9 +41,20 @@ namespace GatheringAPI
                 string connectionString = Configuration.GetConnectionString("DefaultConnection");
                 options.UseSqlServer(connectionString);
             });
+            services.AddIdentity<User, IdentityRole<long>>(options =>
+            {
+                options.User.RequireUniqueEmail = true;
+                options.Password.RequiredLength = 6;
+            })
+            .AddEntityFrameworkStores<GatheringDbContext>();
 
             services.AddTransient<IGroup, DbGroupRepo>();
+            services.AddTransient<IUser, DbUserRepo> ();
             services.AddTransient<IEvent, DbEventRepo>();
+            services.AddSwaggerGen(options =>
+            {
+                options.SwaggerDoc("v1", new OpenApiInfo { Title = "Gathering Backend", Version = "v1" });
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -50,6 +64,17 @@ namespace GatheringAPI
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            app.UseSwagger(options =>
+            {
+                options.RouteTemplate = "/api/{documentName}/swagger.json";
+            });
+
+            app.UseSwaggerUI(options =>
+            {
+                options.SwaggerEndpoint("/api/v1/swagger.json", "Gathering Backend");
+                options.RoutePrefix = "";
+            });
 
             app.UseRouting();
 
