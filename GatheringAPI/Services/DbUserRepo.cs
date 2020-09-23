@@ -16,6 +16,11 @@ namespace GatheringAPI.Services
     {
         private readonly UserManager<User> userManager;
 
+        public DbUserRepo(UserManager<User> userManager)
+        {
+            this.userManager = userManager;
+        }
+
         public async Task<UserDto> Authenticate(string userName, string password)
         {
             var user = await userManager.FindByNameAsync(userName);
@@ -36,14 +41,22 @@ namespace GatheringAPI.Services
         {
             var user = new User
             {
+
+                FirstName = data.FirstName,
+                LastName = data.LastName,
+                BirthDate = data.BirthDate,
                 UserName = data.Username,
+                PhoneNumber = data.PhoneNumber,
                 Email = data.Email
             };
 
             var result = await userManager.CreateAsync(user, data.Password);
-            if(result.Succeeded)
+            if (result.Succeeded)
             {
-                await userManager.AddToRolesAsync(user, data.Roles);
+                if (data.Roles != null)
+                {
+                    await userManager.AddToRolesAsync(user, data.Roles);
+                }
                 return new UserDto
                 {
                     Id = user.Id,
@@ -51,7 +64,7 @@ namespace GatheringAPI.Services
 
                 };
             }
-            foreach(var error in result.Errors)
+            foreach (var error in result.Errors)
             {
                 var errorKey =
                     error.Code.Contains("Password") ? nameof(data.Password) :
@@ -71,5 +84,5 @@ namespace GatheringAPI.Services
         Task<UserDto> Register(RegisterData data, ModelStateDictionary modelState);
     };
 
-    
+
 }
