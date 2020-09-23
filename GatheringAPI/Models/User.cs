@@ -18,5 +18,7 @@ namespace GatheringAPI.Models
 
         [Column(TypeName = "DATE")]
         public DateTime BirthDate { get; set; }
+
+        public Stack<EventInvite> Invites { get; set; }
     }
 }
