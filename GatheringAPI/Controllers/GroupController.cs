@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using GatheringAPI.Models.Api;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -25,9 +26,9 @@ namespace GatheringAPI.Controllers
 
         // GET: api/Group
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Group>>> GetGroups()
+        public IEnumerable<GroupDto> GetGroups()
         {
-            return await repository.GetAllAsync();
+            return repository.GetAll();
         }
 
         // GET: api/Group/5
