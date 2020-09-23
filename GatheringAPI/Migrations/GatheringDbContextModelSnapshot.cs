@@ -69,7 +69,7 @@ namespace GatheringAPI.Migrations
 
                     b.HasIndex("EventId");
 
-                    b.ToTable("EventInvite");
+                    b.ToTable("EventInvites");
                 });
 
             modelBuilder.Entity("GatheringAPI.Models.Group", b =>
@@ -130,7 +130,7 @@ namespace GatheringAPI.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("GroupUser");
+                    b.ToTable("GroupUsers");
                 });
 
             modelBuilder.Entity("GatheringAPI.Models.User", b =>

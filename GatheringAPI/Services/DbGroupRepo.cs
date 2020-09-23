@@ -165,6 +165,18 @@ namespace GatheringAPI.Services
             }
             return true;
         }
+
+        public async Task AddUserAsync(long groupId, long userId)
+        {
+            var groupUser = new GroupUser
+            {
+                GroupId = groupId,
+                UserId = userId
+            };
+
+            _context.GroupUsers.Add(groupUser);
+            await _context.SaveChangesAsync();
+        }
     }
 
     public interface IGroup
@@ -182,5 +194,6 @@ namespace GatheringAPI.Services
         Task AddEventAsync(long groupId, long eventId);
 
         Task DeleteEventAsync(long groupId, long eventId);
+        Task AddUserAsync(long groupId, long userId);
     }
 }
