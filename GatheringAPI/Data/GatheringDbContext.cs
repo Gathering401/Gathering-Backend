@@ -1,10 +1,13 @@
 ﻿using GatheringAPI.Models;
+using GatheringAPI.Models.Api;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
 
 namespace GatheringAPI.Data
 {
-    public class GatheringDbContext : DbContext
+    public class GatheringDbContext : IdentityDbContext<User,IdentityRole<long>,long>
     {
         public GatheringDbContext(DbContextOptions options) : base(options)
         {
@@ -16,16 +19,19 @@ namespace GatheringAPI.Data
 
             modelBuilder.Entity<Group>()
                 .HasData(
-                new Group { GroupId = 1, GroupName = "Odysseus", Description = "HI", Location = "Remote" }
-                );
-            modelBuilder.Entity<User>()
-                .HasData(
-                new User { UserId = 1, FirstName = "Bob", LastName = "Bobberton", Email = "Bobby@example.com", BirthDate = new DateTime(1990,1,1) }
+                    new Group { GroupId = 1, GroupName = "Odysseus", Description = "HI", Location = "Remote" }
                 );
 
+            modelBuilder.Entity<GroupEvent>()
+                .HasKey(groupEvent => new
+                {
+                    groupEvent.GroupId,
+                    groupEvent.EventId,
+                });
         }
         public DbSet<Group> Groups { get; set; }
-        public DbSet<User> Users { get; set; }
+        
         public DbSet<Event> Events { get; set; }
+        public DbSet<GroupEvent> GroupEvents { get; set; }
     }
 }

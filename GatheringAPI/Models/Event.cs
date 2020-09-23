@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -38,8 +39,7 @@ namespace GatheringAPI.Models
         [Required]
         public string Location { get; set; }
 
-        // [Required]
-        // public List<GroupEvent> InvitedGroups { get; set; }
+        public List<GroupEvent> InvitedGroups { get; set; }
 
         // [Required]
         // public List<EventInvites> Attending { get; set; }

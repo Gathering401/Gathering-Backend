@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace GatheringAPI.Models
 {
@@ -16,7 +17,6 @@ namespace GatheringAPI.Models
 
         public string Description { get; set; }
 
-        //public list<GroupEvent> GroupEvents { get; set; }
-
+        public List<GroupEvent> GroupEvents { get; set; }
     }
 }

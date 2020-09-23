@@ -44,7 +44,7 @@ namespace GatheringAPI.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutUser(long id, User user)
         {
-            if (id != user.UserId)
+            if (id != user.Id)
             {
                 return BadRequest();
             }
@@ -77,7 +77,7 @@ namespace GatheringAPI.Controllers
         public async Task<ActionResult<User>> PostUser(User user)
         {
             await repository.CreateAsync(user);
-            return CreatedAtAction("GetUser", new { id = user.UserId }, user);
+            return CreatedAtAction("GetUser", new { id = user.Id }, user);
         }
 
         // DELETE: api/User/5
@@ -96,7 +96,7 @@ namespace GatheringAPI.Controllers
 
         private bool UserExists(long id)
         {
-            return _context.Users.Any(e => e.UserId == id);
+            return _context.Users.Any(e => e.Id == id);
         }
     }
 }

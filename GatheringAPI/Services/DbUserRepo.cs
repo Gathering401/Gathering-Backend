@@ -52,7 +52,7 @@ namespace GatheringAPI.Services
 
         private bool UserExists(long id)
         {
-            return _context.Users.Any(e => e.UserId == id);
+            return _context.Users.Any(e => e.Id == id);
         }
     }
     public interface IUser
