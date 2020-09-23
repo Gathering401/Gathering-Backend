@@ -1,9 +1,13 @@
 ﻿using GatheringAPI.Models;
+using GatheringAPI.Models.Api;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace GatheringAPI.Data
 {
-    public class GatheringDbContext : DbContext
+    public class GatheringDbContext : IdentityDbContext<User,IdentityRole<long>,long>
     {
         public GatheringDbContext(DbContextOptions options) : base(options)
         {
@@ -17,6 +21,7 @@ namespace GatheringAPI.Data
                 .HasData(
                     new Group { GroupId = 1, GroupName = "Odysseus", Description = "HI", Location = "Remote" }
                 );
+
             modelBuilder.Entity<GroupEvent>()
                 .HasKey(groupEvent => new
                 {
@@ -25,7 +30,7 @@ namespace GatheringAPI.Data
                 });
         }
         public DbSet<Group> Groups { get; set; }
-        public DbSet<User> Users { get; set; }
+        
         public DbSet<Event> Events { get; set; }
         public DbSet<GroupEvent> GroupEvents { get; set; }
     }
