@@ -1,13 +1,8 @@
-﻿using GatheringAPI.Data;
-using GatheringAPI.Models;
+﻿using GatheringAPI.Models;
 using GatheringAPI.Models.Api;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace GatheringAPI.Services
@@ -15,10 +10,12 @@ namespace GatheringAPI.Services
     public class DbUserRepo : IUser
     {
         private readonly UserManager<User> userManager;
+        private readonly JWTToken tokenService;
 
-        public DbUserRepo(UserManager<User> userManager)
+        public DbUserRepo(UserManager<User> userManager, JWTToken tokenService)
         {
             this.userManager = userManager;
+            this.tokenService = tokenService;
         }
 
         public async Task<UserDto> Authenticate(string userName, string password)
@@ -30,6 +27,7 @@ namespace GatheringAPI.Services
                 {
                     Id = user.Id,
                     Username = user.UserName,
+                    Token = await tokenService.GetToken(user, TimeSpan.FromMinutes(30)),
                 };
             }
             return null;
