@@ -9,11 +9,14 @@ using Microsoft.EntityFrameworkCore;
 using GatheringAPI.Data;
 using GatheringAPI.Models;
 using GatheringAPI.Services;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace GatheringAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class GroupController : ControllerBase
     {
         //private readonly GatheringDbContext _context;
@@ -28,8 +31,11 @@ namespace GatheringAPI.Controllers
         [HttpGet]
         public IEnumerable<GroupDto> GetGroups()
         {
-            return repository.GetAll();
+            long userId = UserId;
+            return repository.GetAll(userId);
         }
+
+        private long UserId => long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
         // GET: api/Group/5
         [HttpGet("{id}")]
@@ -61,7 +67,7 @@ namespace GatheringAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<Group>> PostGroup(Group @group)
         {
-            await repository.CreateAsync(@group);
+            await repository.CreateAsync(@group,UserId);
             return CreatedAtAction("GetGroup", new { id = @group.GroupId }, @group);
         }
 

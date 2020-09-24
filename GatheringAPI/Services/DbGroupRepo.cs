@@ -25,8 +25,10 @@ namespace GatheringAPI.Services
             Configuration = configuration;
         }
 
-        public async Task CreateAsync(Group group)
+        public async Task CreateAsync(Group group, long userId)
         {
+            group.GroupUsers = new List<GroupUser>();
+            group.GroupUsers.Add(new GroupUser { UserId = userId });
             _context.Groups.Add(@group);
             await _context.SaveChangesAsync();
         }
@@ -78,9 +80,10 @@ namespace GatheringAPI.Services
                 .FirstOrDefault();
         }
 
-        public IEnumerable<GroupDto> GetAll()
+        public IEnumerable<GroupDto> GetAll(long userId)
         {
-            return _context.Groups
+            IQueryable<Group> userGroups = UserGroups(userId);
+            return userGroups
                 .Select(@group => new GroupDto
                 {
                     GroupId = group.GroupId,
@@ -107,6 +110,11 @@ namespace GatheringAPI.Services
                         })
                         .ToList()
                 });
+        }
+
+        private IQueryable<Group> UserGroups(long userId)
+        {
+            return _context.Groups.Where(g => g.GroupUsers.Any(u => u.UserId == userId));
         }
 
         public async Task<bool> UpdateAsync(Group @group)
@@ -245,11 +253,11 @@ namespace GatheringAPI.Services
 
     public interface IGroup
     {
-        IEnumerable<GroupDto> GetAll();
+        IEnumerable<GroupDto> GetAll(long userId);
 
         GroupDto Find(long id);
         Task<bool> UpdateEventAsync(long groupId, Event @event);
-        Task CreateAsync(Group group);
+        Task CreateAsync(Group group,long userId);
 
         Task<Group> DeleteAsync(long id);
 
