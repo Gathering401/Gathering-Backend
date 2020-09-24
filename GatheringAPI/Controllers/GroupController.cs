@@ -3,17 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using GatheringAPI.Models.Api;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using GatheringAPI.Data;
 using GatheringAPI.Models;
 using GatheringAPI.Services;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace GatheringAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class GroupController : ControllerBase
     {
         //private readonly GatheringDbContext _context;
@@ -28,14 +28,18 @@ namespace GatheringAPI.Controllers
         [HttpGet]
         public IEnumerable<GroupDto> GetGroups()
         {
-            return repository.GetAll();
+            long userId = UserId;
+            return repository.GetAll(userId);
         }
+
+        private long UserId => long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
         // GET: api/Group/5
         [HttpGet("{id}")]
         public GroupDto GetGroup(long id)
         {
-            return repository.Find(id);
+            long userId = UserId;
+            return repository.Find(id, userId);
         }
 
         // PUT: api/Group/5
@@ -46,8 +50,8 @@ namespace GatheringAPI.Controllers
             {
                 return BadRequest();
             }
-
-            bool didUpdate = await repository.UpdateAsync(@group);
+            
+            bool didUpdate = await repository.UpdateAsync(@group, UserId);
 
             if (!didUpdate)
             {
@@ -61,7 +65,7 @@ namespace GatheringAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<Group>> PostGroup(Group @group)
         {
-            await repository.CreateAsync(@group);
+            await repository.CreateAsync(@group,UserId);
             return CreatedAtAction("GetGroup", new { id = @group.GroupId }, @group);
         }
 
@@ -69,7 +73,8 @@ namespace GatheringAPI.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<Group>> DeleteGroup(long id)
         {
-            var @group = await repository.DeleteAsync(id);
+            long userId = UserId;
+            var @group = await repository.DeleteAsync(id,userId);
 
             if (@group == null)
             {

@@ -26,30 +26,34 @@ namespace GatheringAPI.Services
             Configuration = configuration;
         }
 
-        public async Task CreateAsync(Group group)
+        public async Task CreateAsync(Group group, long userId)
         {
+            group.GroupUsers = new List<GroupUser>();
+            group.GroupUsers.Add(new GroupUser { UserId = userId });
             _context.Groups.Add(@group);
             await _context.SaveChangesAsync();
         }
 
-        public async Task<Group> DeleteAsync(long id)
+        public async Task<Group> DeleteAsync(long id, long userId)
         {
-            var @group = await _context.Groups.FindAsync(id);
+            IQueryable<Group> userGroups = UserGroups(userId);
+            var @group = userGroups.FirstOrDefault(g=> g.GroupId == id);
 
             if (@group == null)
             {
                 return null;
             }
-
-            _context.Groups.Remove(@group);
+            _context.Entry(@group).State = EntityState.Deleted;
+          
             await _context.SaveChangesAsync();
 
-            return @group;
+            return null;
         }
 
-        public GroupDto Find(long id)
+        public GroupDto Find(long id,long userId)
         {
-            return _context.Groups
+            IQueryable<Group> userGroups = UserGroups(userId);
+            return userGroups
                 .Where(g => g.GroupId == id)
                 .Select(@group => new GroupDto
                 {
@@ -79,9 +83,10 @@ namespace GatheringAPI.Services
                 .FirstOrDefault();
         }
 
-        public IEnumerable<GroupDto> GetAll()
+        public IEnumerable<GroupDto> GetAll(long userId)
         {
-            return _context.Groups
+            IQueryable<Group> userGroups = UserGroups(userId);
+            return userGroups
                 .Select(@group => new GroupDto
                 {
                     GroupId = group.GroupId,
@@ -110,8 +115,18 @@ namespace GatheringAPI.Services
                 });
         }
 
-        public async Task<bool> UpdateAsync(Group @group)
+        private IQueryable<Group> UserGroups(long userId)
         {
+            return _context.Groups.Where(g => g.GroupUsers.Any(u => u.UserId == userId));
+        }
+
+        public async Task<bool> UpdateAsync(Group @group, long userId)
+        {
+            IQueryable<Group> userGroups = UserGroups(userId);
+            if(!userGroups.Any(g=> g.GroupId == @group.GroupId))
+            {
+                return false;
+            }
             _context.Entry(@group).State = EntityState.Modified;
 
             try
@@ -139,6 +154,7 @@ namespace GatheringAPI.Services
 
         public async Task AddEventAsync(long groupId, long eventId)
         {
+            
             var groupEvent = new GroupEvent
             {
                 EventId = eventId,
@@ -264,15 +280,15 @@ namespace GatheringAPI.Services
 
     public interface IGroup
     {
-        IEnumerable<GroupDto> GetAll();
+        IEnumerable<GroupDto> GetAll(long userId);
 
-        GroupDto Find(long id);
+        GroupDto Find(long id,long userId);
         Task<bool> UpdateEventAsync(long groupId, Event @event);
-        Task CreateAsync(Group group);
+        Task CreateAsync(Group group,long userId);
 
-        Task<Group> DeleteAsync(long id);
+        Task<Group> DeleteAsync(long id, long userId);
 
-        Task<bool> UpdateAsync(Group group);
+        Task<bool> UpdateAsync(Group group, long userId);
 
         Task AddEventAsync(long groupId, long eventId);
 
