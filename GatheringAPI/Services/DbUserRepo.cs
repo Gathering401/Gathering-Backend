@@ -15,17 +15,13 @@ namespace GatheringAPI.Services
 
         private readonly GatheringDbContext _context;
 
-        public DbUserRepo(GatheringDbContext context)
-        {
-            _context = context;
-        }
-
         private readonly JWTToken tokenService;
 
-        public DbUserRepo(UserManager<User> userManager, JWTToken tokenService)
+        public DbUserRepo(UserManager<User> userManager, JWTToken tokenService, GatheringDbContext context)
         {
             this.userManager = userManager;
             this.tokenService = tokenService;
+            _context = context;
         }
 
         public async Task<UserDto> Authenticate(string userName, string password)
