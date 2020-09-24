@@ -1,7 +1,9 @@
-﻿using GatheringAPI.Models;
+﻿using GatheringAPI.Data;
+using GatheringAPI.Models;
 using GatheringAPI.Models.Api;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Threading.Tasks;
 
@@ -10,6 +12,14 @@ namespace GatheringAPI.Services
     public class DbUserRepo : IUser
     {
         private readonly UserManager<User> userManager;
+
+        private readonly GatheringDbContext _context;
+
+        public DbUserRepo(GatheringDbContext context)
+        {
+            _context = context;
+        }
+
         private readonly JWTToken tokenService;
 
         public DbUserRepo(UserManager<User> userManager, JWTToken tokenService)
@@ -31,6 +41,13 @@ namespace GatheringAPI.Services
                 };
             }
             return null;
+        }
+
+        public async Task<User> GetUserByPhone(string cleanPhone)
+        {
+            return await _context.Users
+                 .Include(u => u.Invites)
+                 .FirstOrDefaultAsync(u => u.PhoneNumber == cleanPhone);
         }
 
         public async Task<UserDto> Register(RegisterData data, ModelStateDictionary modelState)
@@ -72,11 +89,24 @@ namespace GatheringAPI.Services
 
 
         }
+
+        public async Task<bool> SaveStatus(EventInvite invite)
+        {
+            _context.Entry(invite).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
+
     public interface IUser
     {
         Task<UserDto> Authenticate(string userName, string password);
+
+        Task<User> GetUserByPhone(string cleanPhone);
+
         Task<UserDto> Register(RegisterData data, ModelStateDictionary modelState);
+
+        Task<bool> SaveStatus(EventInvite invite);
     };
 
 
