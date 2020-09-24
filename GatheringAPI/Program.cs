@@ -2,8 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using GatheringAPI.Data;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -13,7 +16,11 @@ namespace GatheringAPI
     {
         public static void Main(string[] args)
         {
-            CreateHostBuilder(args).Build().Run();
+            var host = CreateHostBuilder(args).Build();
+
+            UpdateDatabase(host.Services);
+
+            host.Run();
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
@@ -22,5 +29,16 @@ namespace GatheringAPI
                 {
                     webBuilder.UseStartup<Startup>();
                 });
+
+        private static void UpdateDatabase(IServiceProvider services)
+        {
+            using (var serviceScope = services.CreateScope())
+            {
+                using (var db = serviceScope.ServiceProvider.GetService<GatheringDbContext>())
+                {
+                    db.Database.Migrate();
+                }
+            }
+        }
     }
 }

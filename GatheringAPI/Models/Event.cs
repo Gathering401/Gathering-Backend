@@ -41,8 +41,7 @@ namespace GatheringAPI.Models
 
         public List<GroupEvent> InvitedGroups { get; set; }
 
-        // [Required]
-        // public List<EventInvites> Attending { get; set; }
+        public List<EventInvite> Attending { get; set; }
 
         // Stretchy Goaly
         // public List<EventComments> Comments { get; set; }

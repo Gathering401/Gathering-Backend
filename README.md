@@ -17,6 +17,3 @@ Using Twilio for event notifications through text messages. People can respond t
 | <a href="https://www.linkedin.com/in/ehilst" target="_blank">Enrique LinkedIn</a> | <a href="https://www.linkedin.com/in/christianlievrouw" target="_blank">Christian LinkedIn</a> |<a href="https://www.linkedin.com/in/jenniferbjones/" target="_blank">Jen LinkedIn</a> | <a href="https://www.linkedin.com/in/arikmackenburg" target="_blank">Arik LinkedIn</a> | <a href="https://www.linkedin.com/in/jon-struve/" target="_blank">Jon LinkedIn</a> |
 
 ## Entity Relationship Diagram(ERD)
-
-[_Gathering - Backend_](ProjectERD)
-

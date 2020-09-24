@@ -95,8 +95,10 @@ namespace GatheringAPI
                 options.SwaggerEndpoint("/api/v1/swagger.json", "Gathering Backend");
                 options.RoutePrefix = "";
             });
-
+            
             app.UseRouting();
+            app.UseAuthentication();
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
