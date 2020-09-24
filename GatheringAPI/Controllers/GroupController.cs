@@ -3,10 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using GatheringAPI.Models.Api;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using GatheringAPI.Data;
 using GatheringAPI.Models;
 using GatheringAPI.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -41,7 +38,8 @@ namespace GatheringAPI.Controllers
         [HttpGet("{id}")]
         public GroupDto GetGroup(long id)
         {
-            return repository.Find(id);
+            long userId = UserId;
+            return repository.Find(id, userId);
         }
 
         // PUT: api/Group/5
@@ -52,8 +50,8 @@ namespace GatheringAPI.Controllers
             {
                 return BadRequest();
             }
-
-            bool didUpdate = await repository.UpdateAsync(@group);
+            
+            bool didUpdate = await repository.UpdateAsync(@group, UserId);
 
             if (!didUpdate)
             {
@@ -75,7 +73,8 @@ namespace GatheringAPI.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<Group>> DeleteGroup(long id)
         {
-            var @group = await repository.DeleteAsync(id);
+            long userId = UserId;
+            var @group = await repository.DeleteAsync(id,userId);
 
             if (@group == null)
             {
