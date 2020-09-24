@@ -1,10 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using GatheringAPI.Data;
+﻿using GatheringAPI.Data;
 using GatheringAPI.Models;
 using GatheringAPI.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -14,6 +12,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.SwaggerGen;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace GatheringAPI
 {
@@ -49,11 +50,30 @@ namespace GatheringAPI
             .AddEntityFrameworkStores<GatheringDbContext>();
 
             services.AddTransient<IGroup, DbGroupRepo>();
-            services.AddTransient<IUser, DbUserRepo> ();
+            services.AddTransient<IUser, DbUserRepo>();
             services.AddTransient<IEvent, DbEventRepo>();
+            services.AddScoped<JWTToken>();
+            services.AddAuthentication(options =>
+            {
+                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = JWTToken.GetValidationParameters(Configuration);
+                });
             services.AddSwaggerGen(options =>
             {
                 options.SwaggerDoc("v1", new OpenApiInfo { Title = "Gathering Backend", Version = "v1" });
+                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer",
+                });
+                options.OperationFilter<AuthenticationRequirementOperationFilter>();
             });
         }
 
@@ -86,6 +106,28 @@ namespace GatheringAPI
                     await context.Response.WriteAsync("Hello World!");
                 });
             });
+        }
+        private class AuthenticationRequirementOperationFilter : IOperationFilter
+        {
+            public void Apply(OpenApiOperation operation, OperationFilterContext context)
+            {
+                var hasAnonymous = context.ApiDescription.CustomAttributes().OfType<AllowAnonymousAttribute>().Any();
+                if (hasAnonymous)
+                    return;
+                operation.Security ??= new List<OpenApiSecurityRequirement>();
+                var scheme = new OpenApiSecurityScheme
+                {
+                    Reference = new OpenApiReference
+                    {
+                        Id = "Bearer",
+                        Type = ReferenceType.SecurityScheme,
+                    },
+                };
+                operation.Security.Add(new OpenApiSecurityRequirement
+                {
+                    [scheme] = new List<string>()
+                });
+            }
         }
     }
 }
