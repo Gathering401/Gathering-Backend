@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using GatheringAPI.Data;
@@ -212,12 +213,30 @@ namespace GatheringAPI.Services
             _accountSid = Configuration["Twilio:accountSid"];
             _authToken = Configuration["Twilio:authToken"];
 
+            if (String.IsNullOrEmpty(_phone))
+                throw new NullTwilioPhoneException();
+
+            if (String.IsNullOrEmpty(_accountSid))
+                throw new NullTwilioSidException();
+
+            if (String.IsNullOrEmpty(_authToken))
+                throw new NullTwilioTokenException();
+
             TwilioClient.Init(_accountSid, _authToken);
 
             foreach (var group in @event.InvitedGroups)
             {
-                foreach (var user in group.Group.GroupUsers)
+                var currGroup = _context.Groups
+                    .Include(g => g.GroupUsers)
+                    .ThenInclude(gu => gu.User)
+                    .ThenInclude(u => u.Invites)
+                    .FirstOrDefault(g => g.GroupId == group.GroupId);
+
+                foreach (var user in currGroup.GroupUsers)
                 {
+                    if (String.IsNullOrEmpty(user.User.PhoneNumber))
+                        continue;
+
                     var message = MessageResource.Create(
                         body: $"You've been invited to {@event.EventName}! Please reply with your RSVP - 1 for Yes, 2 for No, 3 for Maybe. Your response will apply to the most recent invitation without a response.",
                         from: new Twilio.Types.PhoneNumber($"+1{_phone}"),
