@@ -6,12 +6,17 @@ namespace GatheringAPI.Models.Api
 {
     public class GroupDto
     {
+        public long GroupId { get; set; }
         [Required]
         public string GroupName { get; set; }
 
         public string Description { get; set; }
 
+        public string Location { get; set; }
+
         public List<GroupEventDto> GroupEvents { get; set; }
+
+        public List<UserDto> GroupUsers { get; set; }
     }
 
     public class GroupEventDto

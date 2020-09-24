@@ -33,9 +33,9 @@ namespace GatheringAPI.Controllers
 
         // GET: api/Group/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Group>> GetGroup(long id)
+        public GroupDto GetGroup(long id)
         {
-            return await repository.FindAsync(id);
+            return repository.Find(id);
         }
 
         // PUT: api/Group/5
@@ -100,6 +100,14 @@ namespace GatheringAPI.Controllers
         {
             bool didUpdate = await repository.UpdateEventAsync(groupId, @event);
             return didUpdate;
+        }
+
+        // POST: api/Group/5/User/2
+        [HttpPost("{groupId}/User/{userId}")]
+        public async Task<ActionResult> AddUser(long groupId, long userId)
+        {
+            await repository.AddUserAsync(groupId, userId);
+            return CreatedAtAction(nameof(AddUser), new { groupId, userId }, null);
         }
     }
 }

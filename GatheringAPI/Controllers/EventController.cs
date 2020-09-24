@@ -94,20 +94,23 @@ namespace GatheringAPI.Controllers
             _authToken = Configuration["Twilio:authToken"];
 
             TwilioClient.Init(_accountSid, _authToken);
-
-            foreach (var group in @event.InvitedGroups)
+            if (@event.InvitedGroups != null)
             {
-                foreach (var user in group.Group.GroupUsers)
+                foreach (var group in @event.InvitedGroups)
                 {
-                    var message = MessageResource.Create(
-                        body: $"You've been invited to {@event.EventName}! Please reply with your RSVP - 1 for Yes, 2 for No, 3 for Maybe. Your response will apply to the most recent invitation without a response.",
-                        from: new Twilio.Types.PhoneNumber($"+1{_phone}"),
-                        to: new Twilio.Types.PhoneNumber($"+1{user.User.PhoneNumber}")
-                        );
+                    foreach (var user in group.Group.GroupUsers)
+                    {
+                        var message = MessageResource.Create(
+                            body: $"You've been invited to {@event.EventName}! Please reply with your RSVP - 1 for Yes, 2 for No, 3 for Maybe. Your response will apply to the most recent invitation without a response.",
+                            from: new Twilio.Types.PhoneNumber($"+1{_phone}"),
+                            to: new Twilio.Types.PhoneNumber($"+1{user.User.PhoneNumber}")
+                            );
 
-                    Console.WriteLine(message.Sid);
+                        Console.WriteLine(message.Sid);
+                    }
                 }
             }
+
         }
 
         // DELETE: api/Event/5
