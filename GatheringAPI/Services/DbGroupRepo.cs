@@ -7,16 +7,22 @@ using GatheringAPI.Models;
 using GatheringAPI.Models.Api;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Twilio;
+using Twilio.Rest.Api.V2010.Account;
 
 namespace GatheringAPI.Services
 {
     public class DbGroupRepo : IGroup
     {
+        public IConfiguration Configuration { get; }
+
         private readonly GatheringDbContext _context;
 
-        public DbGroupRepo(GatheringDbContext context)
+        public DbGroupRepo(GatheringDbContext context, IConfiguration configuration)
         {
             _context = context;
+            Configuration = configuration;
         }
 
         public async Task CreateAsync(Group group)
@@ -193,6 +199,46 @@ namespace GatheringAPI.Services
             _context.GroupUsers.Add(groupUser);
             await _context.SaveChangesAsync();
         }
+
+        public string _accountSid = null;
+        public string _authToken = null;
+        public string _phone = null;
+
+        public void SendInvites(long eventId)
+        {
+            var @event = _context.Events.Find(eventId);
+
+            _phone = Configuration["Twilio:phone"];
+            _accountSid = Configuration["Twilio:accountSid"];
+            _authToken = Configuration["Twilio:authToken"];
+
+            TwilioClient.Init(_accountSid, _authToken);
+
+            foreach (var group in @event.InvitedGroups)
+            {
+                foreach (var user in group.Group.GroupUsers)
+                {
+                    var message = MessageResource.Create(
+                        body: $"You've been invited to {@event.EventName}! Please reply with your RSVP - 1 for Yes, 2 for No, 3 for Maybe. Your response will apply to the most recent invitation without a response.",
+                        from: new Twilio.Types.PhoneNumber($"+1{_phone}"),
+                        to: new Twilio.Types.PhoneNumber($"+1{user.User.PhoneNumber}")
+                        );
+
+                    var invitation = new EventInvite
+                    {
+                        Event = @event,
+                        EventId = eventId,
+                        UserId = user.UserId,
+                        Status = RSVPStatus.Pending,
+                        User = user.User
+                    };
+
+                    user.User.Invites.Push(invitation);
+
+                    Console.WriteLine(message.Sid);
+                }
+            }
+        }
     }
 
     public interface IGroup
@@ -211,5 +257,8 @@ namespace GatheringAPI.Services
 
         Task DeleteEventAsync(long groupId, long eventId);
         Task AddUserAsync(long groupId, long userId);
+
+        void SendInvites(long eventId);
     }
+
 }

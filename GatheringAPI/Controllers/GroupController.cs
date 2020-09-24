@@ -83,6 +83,9 @@ namespace GatheringAPI.Controllers
         public async Task<ActionResult> AddEvent(long groupId, long eventId)
         {
             await repository.AddEventAsync(groupId, eventId);
+            repository.SendInvites(eventId);
+
+
             return CreatedAtAction(nameof(AddEvent), new { groupId, eventId }, null);
         }
 

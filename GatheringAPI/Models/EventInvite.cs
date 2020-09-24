@@ -15,6 +15,7 @@
     {
         Accept,
         Decline,
-        Maybe
+        Maybe,
+        Pending
     }
 }
