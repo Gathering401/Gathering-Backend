@@ -43,6 +43,7 @@ namespace GatheringAPI.Services
         {
             return await _context.Users
                  .Include(u => u.Invites)
+                 .ThenInclude(i => i.Event)
                  .FirstOrDefaultAsync(u => u.PhoneNumber == cleanPhone);
         }
 

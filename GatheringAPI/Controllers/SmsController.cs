@@ -45,15 +45,16 @@ namespace GatheringAPI.Controllers
         public async Task<TwiMLResult> Index(SmsRequest incomingMessage)
         {
             var messagingResponse = new MessagingResponse();
-            
+
             string RsvpResponse = incomingMessage.Body;
             string cleanPhone = incomingMessage.From.Remove(0, 2);
             var user = await repository.GetUserByPhone(cleanPhone);
             var invite = user.Invites.FindLast(i => i.Status == RSVPStatus.Pending);
 
-            if(invite == null)
+            if (invite == null)
             {
                 messagingResponse.Message("You currently have no pending invitations");
+                return TwiML(messagingResponse);
             }
 
             switch (Int32.Parse(RsvpResponse))
