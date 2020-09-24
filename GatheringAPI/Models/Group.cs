@@ -17,5 +17,7 @@ namespace GatheringAPI.Models
         public string Description { get; set; }
 
         public List<GroupEvent> GroupEvents { get; set; }
+
+        public bool IsPublic { get; set; } = false;
     }
 }
