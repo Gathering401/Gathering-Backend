@@ -18,5 +18,5 @@ Using Twilio for event notifications through text messages. People can respond t
 
 ## Entity Relationship Diagram(ERD)
 
-[_Gathering - Backend_](assets/ProjectERD.pdf)
+[_Gathering - Backend_](ProjectERD)
 
