@@ -84,6 +84,8 @@ namespace GatheringAPI.Controllers
         {
             await repository.AddEventAsync(groupId, eventId);
             repository.SendInvites(eventId);
+
+
             return CreatedAtAction(nameof(AddEvent), new { groupId, eventId }, null);
         }
 

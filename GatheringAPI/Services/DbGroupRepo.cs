@@ -224,6 +224,17 @@ namespace GatheringAPI.Services
                         to: new Twilio.Types.PhoneNumber($"+1{user.User.PhoneNumber}")
                         );
 
+                    var invitation = new EventInvite
+                    {
+                        Event = @event,
+                        EventId = eventId,
+                        UserId = user.UserId,
+                        Status = RSVPStatus.Pending,
+                        User = user.User
+                    };
+
+                    user.User.Invites.Push(invitation);
+
                     Console.WriteLine(message.Sid);
                 }
             }
