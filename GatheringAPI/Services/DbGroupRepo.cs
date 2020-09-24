@@ -233,11 +233,13 @@ namespace GatheringAPI.Services
                         User = user.User
                     };
 
-                    user.User.Invites.Push(invitation);
+                    user.User.Invites.Add(invitation);
+                    _context.Entry(user.User).State = EntityState.Modified;
 
                     Console.WriteLine(message.Sid);
                 }
             }
+            _context.SaveChanges();
         }
     }
 
