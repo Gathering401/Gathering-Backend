@@ -21,12 +21,18 @@ namespace GatheringAPI.Services
 
         public async Task<ActionResult<IEnumerable<Event>>> GetAllAsync()
         {
-            return await _context.Events.ToListAsync();
+            return await _context.Events
+                .Include(e => e.Attending)
+                .ThenInclude(a => a.User)
+                .ToListAsync();
         }
 
         public async Task<ActionResult<Event>> GetOneByIdAsync(long id)
         {
-            var @event = await _context.Events.FindAsync(id);
+            var @event = await _context.Events
+                .Include(e => e.Attending)
+                .ThenInclude(a => a.User)
+                .FirstOrDefaultAsync(e => e.EventId == id);
 
             if (@event == null)
             {
