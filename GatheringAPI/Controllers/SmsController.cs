@@ -60,21 +60,21 @@ namespace GatheringAPI.Controllers
             switch (Int32.Parse(RsvpResponse))
             {
                 case 1:
-                    invite.Status = RSVPStatus.Accept;
+                    invite.Status = RSVPStatus.Accepted;
                     await repository.SaveStatus(invite);
-                    messagingResponse.Message($"You have now RSVP to {invite.Event.EventName} as attending");
+                    messagingResponse.Message($"You have now RSVP'd to {invite.Event.EventName} as attending");
                     break;
 
                 case 2:
-                    invite.Status = RSVPStatus.Decline;
+                    invite.Status = RSVPStatus.Declined;
                     await repository.SaveStatus(invite);
-                    messagingResponse.Message($"You have now RSVP to {invite.Event.EventName} as not attending");
+                    messagingResponse.Message($"You have now RSVP'd to {invite.Event.EventName} as not attending");
                     break;
 
                 case 3:
                     invite.Status = RSVPStatus.Maybe;
                     await repository.SaveStatus(invite);
-                    messagingResponse.Message($"You have now RSVP to {invite.Event.EventName} as possibly attending");
+                    messagingResponse.Message($"You have now RSVP'd to {invite.Event.EventName} as possibly attending");
                     break;
                 case 4:
                     messagingResponse.Message($"{invite.Event.EventName} will be on {invite.Event.Start}. It's located at {invite.Event.Location}. There will {(invite.Event.Food ? "" : "not")} be food. It {(invite.Event.Cost > 0 ? "will cost " + invite.Event.Cost + " dollars" : " is free")}."

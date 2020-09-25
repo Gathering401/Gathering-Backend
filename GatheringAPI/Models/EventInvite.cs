@@ -14,8 +14,8 @@
     public enum RSVPStatus
     {
         Pending,
-        Accept,
-        Decline,
+        Accepted,
+        Declined,
         Maybe
     }
 }

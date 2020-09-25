@@ -1,5 +1,6 @@
 ﻿using GatheringAPI.Data;
 using GatheringAPI.Models;
+using GatheringAPI.Models.Api;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -19,11 +20,25 @@ namespace GatheringAPI.Services
             _context = context;
         }
 
-        public async Task<ActionResult<IEnumerable<Event>>> GetAllAsync()
+        public async Task<ActionResult<IEnumerable<EventDto>>> GetAllAsync()
         {
             return await _context.Events
-                .Include(e => e.Attending)
-                .ThenInclude(a => a.User)
+                .Select(e => new EventDto
+                {
+                    EventName = e.EventName,
+                    Start = e.Start,
+                    End = e.End,
+                    Cost = e.Cost,
+                    Location = e.Location,
+                    DayOfMonth = e.DayOfMonth,
+                    Attending = e.Attending
+                        .Select(a => new AttendingDto
+                        {
+                            Name = $"{a.User.FirstName} {a.User.LastName}",
+                            Status = a.Status.ToString()
+                        })
+                        .ToList()
+                })
                 .ToListAsync();
         }
 
@@ -74,7 +89,7 @@ namespace GatheringAPI.Services
 
     public interface IEvent
     {
-        Task<ActionResult<IEnumerable<Event>>> GetAllAsync();
+        Task<ActionResult<IEnumerable<EventDto>>> GetAllAsync();
 
         Task<ActionResult<Event>> GetOneByIdAsync(long id);
 
