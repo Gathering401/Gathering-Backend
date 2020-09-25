@@ -8,6 +8,6 @@ namespace GatheringAPI.Models.Api
     public class AttendingDto
     {
         public string Name { get; set; }
-        public RSVPStatus Status { get; set; }
+        public string Status { get; set; }
     }
 }

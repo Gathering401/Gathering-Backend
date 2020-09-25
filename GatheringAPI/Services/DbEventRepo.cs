@@ -35,7 +35,7 @@ namespace GatheringAPI.Services
                         .Select(a => new AttendingDto
                         {
                             Name = $"{a.User.FirstName} {a.User.LastName}",
-                            Status = a.Status
+                            Status = a.Status.ToString()
                         })
                         .ToList()
                 })
