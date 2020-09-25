@@ -11,6 +11,7 @@ using GatheringAPI.Services;
 using Twilio;
 using Twilio.Rest.Api.V2010.Account;
 using Microsoft.Extensions.Configuration;
+using GatheringAPI.Models.Api;
 
 namespace GatheringAPI.Controllers
 {
@@ -31,7 +32,7 @@ namespace GatheringAPI.Controllers
 
         // GET: api/Event
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Event>>> GetEvents()
+        public async Task<ActionResult<IEnumerable<EventDto>>> GetEvents()
         {
             return await repository.GetAllAsync();
         }
@@ -81,7 +82,7 @@ namespace GatheringAPI.Controllers
             return CreatedAtAction("GetEvent", new { id = @event.EventId }, @event);
         }
 
-        
+
 
         // DELETE: api/Event/5
         [HttpDelete("{id}")]

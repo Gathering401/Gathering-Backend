@@ -21,5 +21,7 @@ namespace GatheringAPI.Models.Api
 
         //[Required]
         public string Location { get; set; }
+
+        public List<AttendingDto> Attending { get; set; }
     }
 }
