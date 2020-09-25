@@ -37,20 +37,20 @@ namespace GatheringAPI.Services
         public async Task<Group> DeleteAsync(long id, long userId)
         {
             IQueryable<Group> userGroups = UserGroups(userId);
-            var @group = userGroups.FirstOrDefault(g=> g.GroupId == id);
+            var @group = userGroups.FirstOrDefault(g => g.GroupId == id);
 
             if (@group == null)
             {
                 return null;
             }
             _context.Entry(@group).State = EntityState.Deleted;
-          
+
             await _context.SaveChangesAsync();
 
             return null;
         }
 
-        public GroupDto Find(long id,long userId)
+        public GroupDto Find(long id, long userId)
         {
             IQueryable<Group> userGroups = UserGroups(userId);
             return userGroups
@@ -123,7 +123,7 @@ namespace GatheringAPI.Services
         public async Task<bool> UpdateAsync(Group @group, long userId)
         {
             IQueryable<Group> userGroups = UserGroups(userId);
-            if(!userGroups.Any(g=> g.GroupId == @group.GroupId))
+            if (!userGroups.Any(g => g.GroupId == @group.GroupId))
             {
                 return false;
             }
@@ -154,7 +154,7 @@ namespace GatheringAPI.Services
 
         public async Task AddEventAsync(long groupId, long eventId)
         {
-            
+
             var groupEvent = new GroupEvent
             {
                 EventId = eventId,
@@ -254,7 +254,7 @@ namespace GatheringAPI.Services
                         continue;
 
                     var message = MessageResource.Create(
-                        body: $"You've been invited to {@event.EventName}! Please reply with your RSVP - 1 for Yes, 2 for No, 3 for Maybe. Your response will apply to the most recent invitation without a response.",
+                        body: $"You've been invited to {@event.EventName}! Please reply with your RSVP - 1 for Yes, 2 for No, 3 for Maybe, 4 to get more Details. Your response will apply to the most recent invitation without a response.",
                         from: new Twilio.Types.PhoneNumber($"+1{_phone}"),
                         to: new Twilio.Types.PhoneNumber($"+1{user.User.PhoneNumber}")
                         );
@@ -282,9 +282,9 @@ namespace GatheringAPI.Services
     {
         IEnumerable<GroupDto> GetAll(long userId);
 
-        GroupDto Find(long id,long userId);
+        GroupDto Find(long id, long userId);
         Task<bool> UpdateEventAsync(long groupId, Event @event);
-        Task CreateAsync(Group group,long userId);
+        Task CreateAsync(Group group, long userId);
 
         Task<Group> DeleteAsync(long id, long userId);
 
