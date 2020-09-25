@@ -76,6 +76,14 @@ namespace GatheringAPI.Controllers
                     await repository.SaveStatus(invite);
                     messagingResponse.Message($"You have now RSVP to {invite.Event.EventName} as possibly attending");
                     break;
+                case 4:
+                    messagingResponse.Message($"{invite.Event.EventName} will be on {invite.Event.Start}. It's located at {invite.Event.Location}. There will {(invite.Event.Food ? "" : "not")} be food. It {(invite.Event.Cost > 0 ? "will cost " + invite.Event.Cost + " dollars" : " is free")}."
+                        + " Would you like to attend? 1 for Yes, 2 for No, 3 for Maybe, 5 to receive Event Description (more details)."
+                        );
+                    break;
+                case 5:
+                    messagingResponse.Message($"The event description is: {invite.Event.Description}.");
+                    break;
             }
             return TwiML(messagingResponse);
         }
