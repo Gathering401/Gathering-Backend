@@ -19,14 +19,12 @@ namespace GatheringAPI.Controllers
     [ApiController]
     public class EventController : ControllerBase
     {
-        private readonly GatheringDbContext _context;
         private readonly IEvent repository;
         public IConfiguration Configuration { get; }
 
-        public EventController(GatheringDbContext context, IEvent repository, IConfiguration configuration)
+        public EventController(IEvent repository, IConfiguration configuration)
         {
             this.repository = repository;
-            _context = context;
             Configuration = configuration;
         }
 
@@ -76,9 +74,7 @@ namespace GatheringAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<Event>> PostEvent(Event @event)
         {
-            _context.Events.Add(@event);
-            await _context.SaveChangesAsync();
-
+            await repository.CreateEventAsync(@event);
             return CreatedAtAction("GetEvent", new { id = @event.EventId }, @event);
         }
 
@@ -88,21 +84,14 @@ namespace GatheringAPI.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<Event>> DeleteEvent(long id)
         {
-            var @event = await _context.Events.FindAsync(id);
+            var @event = await repository.DeleteAsync(id);
+
             if (@event == null)
             {
                 return NotFound();
             }
 
-            _context.Events.Remove(@event);
-            await _context.SaveChangesAsync();
-
             return @event;
-        }
-
-        private bool EventExists(long id)
-        {
-            return _context.Events.Any(e => e.EventId == id);
         }
     }
 }
