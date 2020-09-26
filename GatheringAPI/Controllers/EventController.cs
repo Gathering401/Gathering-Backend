@@ -28,6 +28,7 @@ namespace GatheringAPI.Controllers
             this.repository = repository;
             Configuration = configuration;
         }
+        private long UserId => long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
         // GET: api/Event
         [HttpGet]
@@ -68,8 +69,6 @@ namespace GatheringAPI.Controllers
 
             return NoContent();
         }
-
-        private long UserId => long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
         // POST: api/Event
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
