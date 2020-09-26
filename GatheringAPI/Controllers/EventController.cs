@@ -80,8 +80,6 @@ namespace GatheringAPI.Controllers
             return CreatedAtAction("GetEvent", new { id = @event.EventId }, @event);
         }
 
-
-
         // DELETE: api/Event/5
         [HttpDelete("{id}")]
         public async Task<ActionResult<Event>> DeleteEvent(long id)
@@ -94,6 +92,14 @@ namespace GatheringAPI.Controllers
             }
 
             return @event;
+        }
+
+        // POST: api/Event/5/User/3
+        [HttpPost("{eventId}/Comment")]
+        public async Task<ActionResult<Event>> PostComment(long eventId, EventComment comment)
+        {
+            await repository.AddCommentAsync(eventId, comment);
+            return CreatedAtAction("PostComment", new { comment, eventId }, comment);
         }
     }
 }
