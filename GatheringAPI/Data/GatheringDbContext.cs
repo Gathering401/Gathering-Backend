@@ -46,6 +46,12 @@ namespace GatheringAPI.Data
                     hostedEvent.EventId,
                     hostedEvent.UserId
                 });
+            modelBuilder.Entity<EventComment>()
+                .HasKey(eventComment => new
+                {
+                    eventComment.EventId,
+                    eventComment.UserId
+                });
         }
         public DbSet<Group> Groups { get; set; }
 
@@ -55,5 +61,6 @@ namespace GatheringAPI.Data
         public DbSet<GroupUser> GroupUsers { get; set; }
         public DbSet<EventInvite> EventInvites { get; set; }
         public DbSet<HostedEvent> HostedEvents { get; set; }
+        public DbSet<EventComment> EventComments { get; set; }
     }
 }
