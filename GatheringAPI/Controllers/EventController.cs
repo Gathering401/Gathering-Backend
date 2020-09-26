@@ -12,6 +12,7 @@ using Twilio;
 using Twilio.Rest.Api.V2010.Account;
 using Microsoft.Extensions.Configuration;
 using GatheringAPI.Models.Api;
+using System.Security.Claims;
 
 namespace GatheringAPI.Controllers
 {
@@ -68,13 +69,15 @@ namespace GatheringAPI.Controllers
             return NoContent();
         }
 
+        private long UserId => long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
         // POST: api/Event
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPost]
         public async Task<ActionResult<Event>> PostEvent(Event @event)
         {
-            await repository.CreateEventAsync(@event);
+            await repository.CreateEventAsync(@event, UserId);
             return CreatedAtAction("GetEvent", new { id = @event.EventId }, @event);
         }
 

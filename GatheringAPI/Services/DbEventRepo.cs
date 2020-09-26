@@ -20,8 +20,14 @@ namespace GatheringAPI.Services
             _context = context;
         }
 
-        public async Task CreateEventAsync(Event @event)
+        public async Task CreateEventAsync(Event @event, long userId)
         {
+            @event.EventHost = new HostedEvent
+            {
+                UserId = userId,
+                EventId = @event.EventId
+            };
+
             _context.Events.Add(@event);
             await _context.SaveChangesAsync();
         }
@@ -110,7 +116,7 @@ namespace GatheringAPI.Services
 
     public interface IEvent
     {
-        Task CreateEventAsync(Event @event);
+        Task CreateEventAsync(Event @event, long userId);
         Task<ActionResult<IEnumerable<EventDto>>> GetAllAsync();
         Task<Event> DeleteAsync(long id);
         Task<ActionResult<Event>> GetOneByIdAsync(long id);

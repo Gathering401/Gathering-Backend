@@ -40,6 +40,12 @@ namespace GatheringAPI.Data
                     groupUser.GroupId,
                     groupUser.UserId
                 });
+            modelBuilder.Entity<HostedEvent>()
+                .HasKey(hostedEvent => new
+                {
+                    hostedEvent.EventId,
+                    hostedEvent.UserId
+                });
         }
         public DbSet<Group> Groups { get; set; }
 
@@ -48,5 +54,6 @@ namespace GatheringAPI.Data
 
         public DbSet<GroupUser> GroupUsers { get; set; }
         public DbSet<EventInvite> EventInvites { get; set; }
+        public DbSet<HostedEvent> HostedEvents { get; set; }
     }
 }
