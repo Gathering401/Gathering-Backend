@@ -64,7 +64,8 @@ namespace GatheringAPI.Services
                             Name = $"{a.User.FirstName} {a.User.LastName}",
                             Status = a.Status.ToString()
                         })
-                        .ToList()
+                        .ToList(),
+                    HostedBy = $"{e.EventHost.User.FirstName} {e.EventHost.User.LastName}"
                 })
                 .ToListAsync();
         }

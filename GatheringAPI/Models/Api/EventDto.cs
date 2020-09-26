@@ -23,5 +23,7 @@ namespace GatheringAPI.Models.Api
         public string Location { get; set; }
 
         public List<AttendingDto> Attending { get; set; }
+
+        public string HostedBy { get; set; }
     }
 }
