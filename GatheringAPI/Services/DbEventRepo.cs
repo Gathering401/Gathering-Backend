@@ -22,7 +22,7 @@ namespace GatheringAPI.Services
 
         public async Task AddCommentAsync(long eventId, EventComment comment)
         {
-            var @event = _context.Events.Find(eventId);
+            var @event = await _context.Events.FindAsync(eventId);
 
             @event.Comments.Add(comment);
             await _context.SaveChangesAsync();
@@ -73,7 +73,14 @@ namespace GatheringAPI.Services
                             Status = a.Status.ToString()
                         })
                         .ToList(),
-                    HostedBy = $"{e.EventHost.User.FirstName} {e.EventHost.User.LastName}"
+                    HostedBy = $"{e.EventHost.User.FirstName} {e.EventHost.User.LastName}",
+                    Comments = e.Comments
+                        .Select(c => new CommentDto
+                        {
+                            Commenter = $"{c.User.FirstName} {c.User.LastName}",
+                            Comment = c.Comment
+                        })
+                        .ToList()
                 })
                 .ToListAsync();
         }

@@ -25,5 +25,7 @@ namespace GatheringAPI.Models.Api
         public List<AttendingDto> Attending { get; set; }
 
         public string HostedBy { get; set; }
+
+        public List<CommentDto> Comments { get; set; }
     }
 }

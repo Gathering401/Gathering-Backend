@@ -93,6 +93,13 @@ namespace GatheringAPI.Services
             await _context.SaveChangesAsync();
             return true;
         }
+
+        public async Task<bool> SaveComment(EventComment comment)
+        {
+            _context.Entry(comment).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
 
     public interface IUser
@@ -104,6 +111,7 @@ namespace GatheringAPI.Services
         Task<UserDto> Register(RegisterData data, ModelStateDictionary modelState);
 
         Task<bool> SaveStatus(EventInvite invite);
+        Task<bool> SaveComment(EventComment comment);
     };
 
 
