@@ -20,14 +20,6 @@ namespace GatheringAPI.Services
             _context = context;
         }
 
-        public async Task AddCommentAsync(long eventId, EventComment comment)
-        {
-            var @event = await _context.Events.FindAsync(eventId);
-
-            @event.Comments.Add(comment);
-            await _context.SaveChangesAsync();
-        }
-
         public async Task CreateEventAsync(Event @event, long userId)
         {
             @event.EventHost = new HostedEvent
@@ -138,6 +130,5 @@ namespace GatheringAPI.Services
         Task<ActionResult<Event>> GetOneByIdAsync(long id);
 
         Task<bool> UpdateByIdAsync(Event @event);
-        Task AddCommentAsync(long eventId, EventComment comment);
     }
 }

@@ -93,13 +93,5 @@ namespace GatheringAPI.Controllers
 
             return @event;
         }
-
-        // POST: api/Event/5/User/3
-        [HttpPost("{eventId}/Comment")]
-        public async Task<ActionResult<Event>> PostComment(long eventId, EventComment comment)
-        {
-            await repository.AddCommentAsync(eventId, comment);
-            return CreatedAtAction("PostComment", new { comment, eventId }, comment);
-        }
     }
 }
