@@ -44,8 +44,10 @@ namespace GatheringAPI.Models
         public List<EventInvite> Attending { get; set; }
 
         public string Description { get; set; }
-        // Stretchy Goaly
-        // public List<EventComments> Comments { get; set; }
+
+        public HostedEvent EventHost { get; set; }
+
+        public List<EventComment> Comments { get; set; }
     }
     public enum Repeat
     {

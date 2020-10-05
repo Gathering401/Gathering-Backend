@@ -12,6 +12,7 @@ using Twilio;
 using Twilio.Rest.Api.V2010.Account;
 using Microsoft.Extensions.Configuration;
 using GatheringAPI.Models.Api;
+using System.Security.Claims;
 
 namespace GatheringAPI.Controllers
 {
@@ -19,16 +20,15 @@ namespace GatheringAPI.Controllers
     [ApiController]
     public class EventController : ControllerBase
     {
-        private readonly GatheringDbContext _context;
         private readonly IEvent repository;
         public IConfiguration Configuration { get; }
 
-        public EventController(GatheringDbContext context, IEvent repository, IConfiguration configuration)
+        public EventController(IEvent repository, IConfiguration configuration)
         {
             this.repository = repository;
-            _context = context;
             Configuration = configuration;
         }
+        private long UserId => long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
         // GET: api/Event
         [HttpGet]
@@ -76,33 +76,22 @@ namespace GatheringAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<Event>> PostEvent(Event @event)
         {
-            _context.Events.Add(@event);
-            await _context.SaveChangesAsync();
-
+            await repository.CreateEventAsync(@event, UserId);
             return CreatedAtAction("GetEvent", new { id = @event.EventId }, @event);
         }
-
-
 
         // DELETE: api/Event/5
         [HttpDelete("{id}")]
         public async Task<ActionResult<Event>> DeleteEvent(long id)
         {
-            var @event = await _context.Events.FindAsync(id);
+            var @event = await repository.DeleteAsync(id);
+
             if (@event == null)
             {
                 return NotFound();
             }
 
-            _context.Events.Remove(@event);
-            await _context.SaveChangesAsync();
-
             return @event;
-        }
-
-        private bool EventExists(long id)
-        {
-            return _context.Events.Any(e => e.EventId == id);
         }
     }
 }

@@ -20,5 +20,7 @@ namespace GatheringAPI.Models
         public DateTime BirthDate { get; set; }
 
         public List<EventInvite> Invites { get; set; }
+
+        public List<HostedEvent> HostedEvents { get; set; }
     }
 }
