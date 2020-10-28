@@ -6,6 +6,7 @@ namespace GatheringAPI.Models.Api
 {
     public class EventDto
     {
+        public long EventId { get; set; }
         //[Required]
         public string EventName { get; set; }
 
