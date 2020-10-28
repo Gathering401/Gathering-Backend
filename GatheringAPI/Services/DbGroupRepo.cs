@@ -97,6 +97,7 @@ namespace GatheringAPI.Services
                     GroupEvents = group.GroupEvents
                         .Select(e => new GroupEventDto
                         {
+                            EventId = e.Event.EventId,
                             EventName = e.Event.EventName,
                             Start = e.Event.Start,
                             End = e.Event.End,
