@@ -21,6 +21,7 @@ namespace GatheringAPI.Models.Api
 
     public class GroupEventDto
     {
+        public long EventId { get; set; }
         public string EventName { get; set; }
 
         //[Required]
