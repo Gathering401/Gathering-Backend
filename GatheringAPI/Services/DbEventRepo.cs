@@ -52,6 +52,7 @@ namespace GatheringAPI.Services
             return await _context.Events
                 .Select(e => new EventDto
                 {
+                    EventId = e.EventId,
                     EventName = e.EventName,
                     Start = e.Start,
                     End = e.End,
