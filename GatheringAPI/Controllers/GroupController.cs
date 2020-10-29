@@ -50,7 +50,7 @@ namespace GatheringAPI.Controllers
             {
                 return BadRequest();
             }
-            
+
             bool didUpdate = await repository.UpdateAsync(@group, UserId);
 
             if (!didUpdate)
@@ -65,7 +65,7 @@ namespace GatheringAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<Group>> PostGroup(Group @group)
         {
-            await repository.CreateAsync(@group,UserId);
+            await repository.CreateAsync(@group, UserId);
             return CreatedAtAction("GetGroup", new { id = @group.GroupId }, @group);
         }
 
@@ -74,7 +74,7 @@ namespace GatheringAPI.Controllers
         public async Task<ActionResult<Group>> DeleteGroup(long id)
         {
             long userId = UserId;
-            var @group = await repository.DeleteAsync(id,userId);
+            var @group = await repository.DeleteAsync(id, userId);
 
             if (@group == null)
             {
@@ -117,5 +117,14 @@ namespace GatheringAPI.Controllers
             await repository.AddUserAsync(groupId, userId);
             return CreatedAtAction(nameof(AddUser), new { groupId, userId }, null);
         }
+
+        //POST: api/Group/5/Event
+        [HttpPost("{groupId}/Event")]
+        public async Task<ActionResult<Event>> AddEventToGroup(Event @event, long groupId)
+        {
+            await repository.CreateEventAsync(@event, UserId, groupId);
+            return Ok();
+        }
+        
     }
 }

@@ -129,7 +129,6 @@ namespace GatheringAPI.Services
         Task<ActionResult<IEnumerable<EventDto>>> GetAllAsync();
         Task<Event> DeleteAsync(long id);
         Task<ActionResult<Event>> GetOneByIdAsync(long id);
-
         Task<bool> UpdateByIdAsync(Event @event);
     }
 }

@@ -277,6 +277,19 @@ namespace GatheringAPI.Services
             }
             _context.SaveChanges();
         }
+
+        public async Task CreateEventAsync(Event @event, long userId, long groupId)
+        {
+            @event.EventHost = new HostedEvent
+            {
+                UserId = userId,
+                EventId = @event.EventId
+            };
+
+            _context.Events.Add(@event);
+            await _context.SaveChangesAsync();
+            await AddEventAsync(groupId, @event.EventId);
+        }
     }
 
     public interface IGroup
@@ -297,6 +310,7 @@ namespace GatheringAPI.Services
         Task AddUserAsync(long groupId, long userId);
 
         void SendInvites(long eventId);
+        Task CreateEventAsync(Event @event, long userId, long groupId);
     }
 
 }
