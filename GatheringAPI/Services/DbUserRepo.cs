@@ -33,7 +33,7 @@ namespace GatheringAPI.Services
                 {
                     Id = user.Id,
                     Username = user.UserName,
-                    Token = await tokenService.GetToken(user, TimeSpan.FromMinutes(30)),
+                    Token = await tokenService.GetToken(user, TimeSpan.FromHours(12)),
                 };
             }
             return null;
