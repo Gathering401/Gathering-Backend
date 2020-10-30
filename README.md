@@ -15,5 +15,12 @@ Using Twilio for event notifications through text messages. People can respond t
 |--------------------|--------------------|--------------------|--------------------|--------------------|
 | <a href="https://github.com/ehilst515" target="_blank">Enrique GitHub</a> | <a href="https://github.com/christianlievrouw" target="_blank">Christian GitHub</a> | <a href="https://github.com/jenjones319" target="_blank">Jen GitHub</a> | <a href="https://github.com/arikmackenburg" target="_blank">Arik GitHub</a> | <a href="https://github.com/OCDAmmo3" target="_blank">Jon GitHub</a> |
 | <a href="https://www.linkedin.com/in/ehilst" target="_blank">Enrique LinkedIn</a> | <a href="https://www.linkedin.com/in/christianlievrouw" target="_blank">Christian LinkedIn</a> |<a href="https://www.linkedin.com/in/jenniferbjones/" target="_blank">Jen LinkedIn</a> | <a href="https://www.linkedin.com/in/arikmackenburg" target="_blank">Arik LinkedIn</a> | <a href="https://www.linkedin.com/in/jon-struve/" target="_blank">Jon LinkedIn</a> |
+  
+  
+## Goals for the Future
 
-## Entity Relationship Diagram(ERD)
+As for where we want to take this, a few of the features that we've thought of so far include (in no particular order):
+
+* Route to leave a group
+* Route to remove a member from a group as an admin
+* Route to delete a group (for groups that are no longer active)
