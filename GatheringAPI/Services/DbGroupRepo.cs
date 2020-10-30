@@ -290,7 +290,7 @@ namespace GatheringAPI.Services
             _context.Events.Add(@event);
             await _context.SaveChangesAsync();
             await AddEventAsync(groupId, @event.EventId);
-            SendInvites(groupId);
+            SendInvites(@event.EventId);
         }
     }
 
