@@ -255,11 +255,19 @@ namespace GatheringAPI.Services
                     if (String.IsNullOrEmpty(user.User.PhoneNumber))
                         continue;
 
-                    var message = MessageResource.Create(
-                        body: $"You've been invited to {@event.EventName}! Please reply with your RSVP - 1 for Yes, 2 for No, 3 for Maybe, 4 to get more Details, 5 for event description, or 6 to ask a question. Your response will apply to your most recent invitation without a response.",
-                        from: new Twilio.Types.PhoneNumber($"+1{_phone}"),
-                        to: new Twilio.Types.PhoneNumber($"+1{user.User.PhoneNumber}")
-                        );
+                    try
+                    {
+                        MessageResource.Create(
+                         body: $"You've been invited to {@event.EventName}! Please reply with your RSVP - 1 for Yes, 2 for No, 3 for Maybe, 4 to get more Details, 5 for event description, or 6 to ask a question. Your response will apply to your most recent invitation without a response.",
+                          from: new Twilio.Types.PhoneNumber($"+1{_phone}"),
+                          to: new Twilio.Types.PhoneNumber($"+1{user.User.PhoneNumber}")
+                      );
+                    }
+
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex);
+                    }
 
                     var invitation = new EventInvite
                     {
@@ -273,7 +281,6 @@ namespace GatheringAPI.Services
                     user.User.Invites.Add(invitation);
                     _context.Entry(user.User).State = EntityState.Modified;
 
-                    Console.WriteLine(message.Sid);
                 }
             }
             _context.SaveChanges();
