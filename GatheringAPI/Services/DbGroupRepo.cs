@@ -77,6 +77,8 @@ namespace GatheringAPI.Services
                         .Select(gu => new UserDto
                         {
                             Username = gu.User.UserName,
+                            FirstName = gu.User.FirstName,
+                            LastName = gu.User.LastName,
                             Id = gu.User.Id
                         })
                         .ToList()
@@ -111,6 +113,8 @@ namespace GatheringAPI.Services
                         .Select(gu => new UserDto
                         {
                             Username = gu.User.UserName,
+                            FirstName = gu.User.FirstName,
+                            LastName = gu.User.LastName,
                             Id = gu.User.Id
                         })
                         .ToList()
