@@ -123,7 +123,7 @@ namespace GatheringAPI.Controllers
         public async Task<ActionResult<Event>> AddEventToGroup(Event @event, long groupId)
         {
             await repository.CreateEventAsync(@event, UserId, groupId);
-            return Ok();
+            return Ok();    
         }
         
         //DELETE: api/Group/5/User/2
