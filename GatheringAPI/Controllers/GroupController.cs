@@ -126,5 +126,12 @@ namespace GatheringAPI.Controllers
             return Ok();
         }
         
+        //DELETE: api/Group/5/User/2
+        [HttpDelete("{groupId}/User/{userId}")]
+        public async Task<ActionResult> RemoveUserFromGroup(long groupId, long userId)
+        {
+            await repository.RemoveUserAsync(groupId, userId);
+            return Ok();
+        }
     }
 }

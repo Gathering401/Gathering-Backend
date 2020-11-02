@@ -219,6 +219,14 @@ namespace GatheringAPI.Services
             await _context.SaveChangesAsync();
         }
 
+        public async Task RemoveUserAsync(long groupId, long userId)
+        {
+            var groupUser = await _context.GroupUsers.FindAsync(groupId, userId);
+
+            _context.GroupUsers.Remove(groupUser);
+            await _context.SaveChangesAsync();
+        }
+
         public string _accountSid = null;
         public string _authToken = null;
         public string _phone = null;
@@ -317,6 +325,7 @@ namespace GatheringAPI.Services
 
         Task DeleteEventAsync(long groupId, long eventId);
         Task AddUserAsync(long groupId, long userId);
+        Task RemoveUserAsync(long groupId, long userId);
 
         void SendInvites(long eventId);
         Task CreateEventAsync(Event @event, long userId, long groupId);
