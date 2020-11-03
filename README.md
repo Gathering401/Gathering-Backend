@@ -26,3 +26,4 @@ As for where we want to take this, a few of the features that we've thought of s
 * Route to delete a group (for groups that are no longer active) (oops, this should be on frontend as *button* to delete group)
 * Poll system
 * Recurring events
+* Get event host working"
