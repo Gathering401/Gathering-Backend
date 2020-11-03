@@ -21,6 +21,8 @@ Using Twilio for event notifications through text messages. People can respond t
 
 As for where we want to take this, a few of the features that we've thought of so far include (in no particular order):
 
-* Route to leave a group
+* Route to leave a group (done)
 * Route to remove a member from a group as an admin
-* Route to delete a group (for groups that are no longer active)
+* Route to delete a group (for groups that are no longer active) (oops, this should be on frontend as *button* to delete group)
+* Poll system
+* Recurring events
