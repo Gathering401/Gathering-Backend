@@ -110,12 +110,14 @@ namespace GatheringAPI.Controllers
             return didUpdate;
         }
 
-        // POST: api/Group/5/User/2
-        [HttpPost("{groupId}/User/{userId}")]
-        public async Task<ActionResult> AddUser(long groupId, long userId)
+        // POST: api/Group/5/User/jonstruve
+        [HttpPost("{groupId}/User/{userName}")]
+        public async Task<ActionResult> AddUser(long groupId, string userName)
         {
-            await repository.AddUserAsync(groupId, userId);
-            return CreatedAtAction(nameof(AddUser), new { groupId, userId }, null);
+            await repository.AddUserAsync(groupId, userName);
+
+            long userId = await repository.FindUserIdByUserName(userName);
+            return CreatedAtAction(nameof(AddUser), new { groupId, userName }, null);
         }
 
         //POST: api/Group/5/Event

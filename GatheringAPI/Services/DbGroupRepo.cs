@@ -211,12 +211,14 @@ namespace GatheringAPI.Services
             return true;
         }
 
-        public async Task AddUserAsync(long groupId, long userId)
+        public async Task AddUserAsync(long groupId, string userName)
         {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == userName);
+
             var groupUser = new GroupUser
             {
                 GroupId = groupId,
-                UserId = userId
+                UserId = user.Id
             };
 
             _context.GroupUsers.Add(groupUser);
@@ -311,6 +313,12 @@ namespace GatheringAPI.Services
             await AddEventAsync(groupId, @event.EventId);
             SendInvites(@event.EventId);
         }
+
+        public async Task<long> FindUserIdByUserName(string userName)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == userName);
+            return user.Id;
+        }
     }
 
     public interface IGroup
@@ -328,11 +336,12 @@ namespace GatheringAPI.Services
         Task AddEventAsync(long groupId, long eventId);
 
         Task DeleteEventAsync(long groupId, long eventId);
-        Task AddUserAsync(long groupId, long userId);
+        Task AddUserAsync(long groupId, string userName);
         Task RemoveUserAsync(long groupId, long userId);
 
         void SendInvites(long eventId);
         Task CreateEventAsync(Event @event, long userId, long groupId);
+        Task<long> FindUserIdByUserName(string userName);
     }
 
 }
