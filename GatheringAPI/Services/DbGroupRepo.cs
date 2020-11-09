@@ -237,10 +237,8 @@ namespace GatheringAPI.Services
         public string _authToken = null;
         public string _phone = null;
 
-        public void SendInvites(long eventId)
+        public void SendInvites(Event @event)
         {
-            var @event = _context.Events.Find(eventId);
-
             _phone = Configuration["Twilio:phone"];
             _accountSid = Configuration["Twilio:accountSid"];
             _authToken = Configuration["Twilio:authToken"];
@@ -286,7 +284,7 @@ namespace GatheringAPI.Services
                     var invitation = new EventInvite
                     {
                         Event = @event,
-                        EventId = eventId,
+                        EventId = @event.EventId,
                         UserId = user.UserId,
                         Status = RSVPStatus.Pending,
                         User = user.User
@@ -309,9 +307,9 @@ namespace GatheringAPI.Services
             };
 
             _context.Events.Add(@event);
-            SendInvites(@event.EventId);
             await _context.SaveChangesAsync();
             await AddEventAsync(groupId, @event.EventId);
+            SendInvites(@event);
         }
 
         public async Task<long> FindUserIdByUserName(string userName)
@@ -339,7 +337,7 @@ namespace GatheringAPI.Services
         Task AddUserAsync(long groupId, string userName);
         Task RemoveUserAsync(long groupId, long userId);
 
-        void SendInvites(long eventId);
+        void SendInvites(Event @event);
         Task CreateEventAsync(Event @event, long userId, long groupId);
         Task<long> FindUserIdByUserName(string userName);
     }
