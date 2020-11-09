@@ -1,4 +1,4 @@
-name: .NET Core
+name: GatheringAPI
 
 on:
   push:
@@ -27,6 +27,9 @@ jobs:
       run: dotnet build --configuration Release --no-restore
     - name: Test
       run: dotnet test --no-restore --verbosity normal
+    - name: Publish
+      run: dotnet publish --configuration Release --no-build --output ./output
+
 
     - name: Deploy to Production
       uses: azure/webapps-deploy@v2
