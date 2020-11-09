@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ master ]
 
+defaults:
+  run:
+    working-directory: GatheringAPI
+
 jobs:
   build:
 
@@ -28,5 +32,5 @@ jobs:
       uses: azure/webapps-deploy@v2
       with:
         app-name: Gathering
-        package: ../../GatheringAPI/output
+        package: ./GatheringAPI/output
         publish-profile: ${{ secrets.AZURE_PUBLISH_GATHERING }}
