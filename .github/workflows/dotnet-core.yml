@@ -1,10 +1,14 @@
-name: .NET Core
+name: GatheringAPI
 
 on:
   push:
     branches: [ master ]
   pull_request:
     branches: [ master ]
+
+defaults:
+  run:
+    working-directory: GatheringAPI
 
 jobs:
   build:
@@ -23,3 +27,13 @@ jobs:
       run: dotnet build --configuration Release --no-restore
     - name: Test
       run: dotnet test --no-restore --verbosity normal
+    - name: Publish
+      run: dotnet publish --configuration Release --no-build --output ./output
+
+
+    - name: Deploy to Production
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: Gathering
+        package: ./GatheringAPI/output
+        publish-profile: ${{ secrets.AZURE_PUBLISH_GATHERING }}
