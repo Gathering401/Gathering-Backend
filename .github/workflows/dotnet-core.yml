@@ -30,3 +30,4 @@ jobs:
         app-name: Gathering
         package: ./dotnet-core/output
         publish-profile: ${{ secrets.AZURE_PUBLISH_GATHERING }}
+        
