@@ -18,10 +18,12 @@ namespace GatheringAPI.Controllers
     {
         //private readonly GatheringDbContext _context;
         private readonly IGroup repository;
+        private readonly IEvent eventRepo;
 
-        public GroupController(IGroup groupRepository)
+        public GroupController(IGroup groupRepository, IEvent eventRepository)
         {
             repository = groupRepository;
+            eventRepo = eventRepository;
         }
 
         // GET: api/Group
@@ -87,8 +89,10 @@ namespace GatheringAPI.Controllers
         [HttpPost("{groupId}/Event/{eventId}")]
         public async Task<ActionResult> AddEvent(long groupId, long eventId)
         {
+            Event @event = await eventRepo.GetOneByIdAsync(eventId);
+
             await repository.AddEventAsync(groupId, eventId);
-            repository.SendInvites(eventId);
+            repository.SendInvites(@event);
 
 
             return CreatedAtAction(nameof(AddEvent), new { groupId, eventId }, null);

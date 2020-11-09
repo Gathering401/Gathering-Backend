@@ -78,7 +78,7 @@ namespace GatheringAPI.Services
                 .ToListAsync();
         }
 
-        public async Task<ActionResult<Event>> GetOneByIdAsync(long id)
+        public async Task<Event> GetOneByIdAsync(long id)
         {
             var @event = await _context.Events
                 .Include(e => e.Attending)
@@ -128,7 +128,7 @@ namespace GatheringAPI.Services
         Task CreateEventAsync(Event @event, long userId);
         Task<ActionResult<IEnumerable<EventDto>>> GetAllAsync();
         Task<Event> DeleteAsync(long id);
-        Task<ActionResult<Event>> GetOneByIdAsync(long id);
+        Task<Event> GetOneByIdAsync(long id);
         Task<bool> UpdateByIdAsync(Event @event);
     }
 }
