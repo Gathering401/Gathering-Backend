@@ -25,6 +25,7 @@ jobs:
       run: dotnet test --no-restore --verbosity normal
 
     - name: Deploy to Production
+      uses: azure/webapps-deploy@v2
       with:
         app-name: Gathering
         package: ./dotnet-core/output
