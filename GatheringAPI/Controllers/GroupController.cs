@@ -102,16 +102,24 @@ namespace GatheringAPI.Controllers
         [HttpDelete("{groupId}/Event/{eventId}")]
         public async Task<ActionResult> DeleteEvent(long groupId, long eventId)
         {
-            await repository.DeleteEventAsync(groupId, eventId);
-            return Ok();
+            bool didDelete = await repository.DeleteEventAsync(groupId, eventId, UserId);
+
+            if (didDelete == true)
+                return Ok();
+            else
+                return Unauthorized();
         }
 
         // PUT: api/Group/5/Event/3
         [HttpPut("{groupId}/Event/{eventId}")]
-        public async Task<bool> UpdateEvent(long groupId, Event @event)
+        public async Task<ActionResult> UpdateEvent(long groupId, Event @event)
         {
-            bool didUpdate = await repository.UpdateEventAsync(groupId, @event);
-            return didUpdate;
+            bool didUpdate = await repository.UpdateEventAsync(groupId, @event, UserId);
+
+            if (didUpdate == true)
+                return Ok();
+            else
+                return Unauthorized();
         }
 
         // POST: api/Group/5/User/jonstruve

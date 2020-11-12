@@ -171,16 +171,31 @@ namespace GatheringAPI.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteEventAsync(long groupId, long eventId)
+        public async Task<bool> DeleteEventAsync(long groupId, long eventId, long UserId)
         {
+            var @event = await _context.Events
+                .Include(e => e.EventHost)
+                .FirstOrDefaultAsync(e => e.EventId == eventId);
+
+            if (HostMatchesCurrent(UserId, @event) == false)
+                return false;
+
             var groupEvent = await _context.GroupEvents.FindAsync(groupId, eventId);
 
             _context.GroupEvents.Remove(groupEvent);
             await _context.SaveChangesAsync();
+            return true;
         }
 
-        public async Task<bool> UpdateEventAsync(long groupId, Event @event)
+        public async Task<bool> UpdateEventAsync(long groupId, Event @event, long UserId)
         {
+            @event = await _context.Events
+                .Include(e => e.EventHost)
+                .FirstOrDefaultAsync(e => e.EventId == @event.EventId);
+
+            if (HostMatchesCurrent(UserId, @event) == false)
+                return false;
+
             _context.Entry(@event).State = EntityState.Modified;
 
             try
@@ -317,6 +332,11 @@ namespace GatheringAPI.Services
             var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == userName);
             return user.Id;
         }
+
+        public bool HostMatchesCurrent(long current, Event @event)
+        {
+            return current == @event.EventHost.UserId;
+        }
     }
 
     public interface IGroup
@@ -324,7 +344,7 @@ namespace GatheringAPI.Services
         IEnumerable<GroupDto> GetAll(long userId);
 
         GroupDto Find(long id, long userId);
-        Task<bool> UpdateEventAsync(long groupId, Event @event);
+        Task<bool> UpdateEventAsync(long groupId, Event @event, long UserId);
         Task CreateAsync(Group group, long userId);
 
         Task<Group> DeleteAsync(long id, long userId);
@@ -333,13 +353,15 @@ namespace GatheringAPI.Services
 
         Task AddEventAsync(long groupId, long eventId);
 
-        Task DeleteEventAsync(long groupId, long eventId);
+        Task<bool> DeleteEventAsync(long groupId, long eventId, long UserId);
         Task AddUserAsync(long groupId, string userName);
         Task RemoveUserAsync(long groupId, long userId);
 
         void SendInvites(Event @event);
         Task CreateEventAsync(Event @event, long userId, long groupId);
         Task<long> FindUserIdByUserName(string userName);
+
+        bool HostMatchesCurrent(long current, Event @event);
     }
 
 }
