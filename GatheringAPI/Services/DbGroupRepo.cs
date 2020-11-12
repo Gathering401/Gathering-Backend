@@ -171,23 +171,30 @@ namespace GatheringAPI.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteEventAsync(long groupId, long eventId, long UserId)
+        public async Task<bool> DeleteEventAsync(long groupId, long eventId, long UserId)
         {
-            var @event = _context.Events.Find(eventId);
+            var @event = await _context.Events
+                .Include(e => e.EventHost)
+                .FirstOrDefaultAsync(e => e.EventId == eventId);
 
-            if (await HostMatchesCurrent(UserId, @event) == false)
-                throw new UnauthorizedAccessException();
+            if (HostMatchesCurrent(UserId, @event) == false)
+                return false;
 
             var groupEvent = await _context.GroupEvents.FindAsync(groupId, eventId);
 
             _context.GroupEvents.Remove(groupEvent);
             await _context.SaveChangesAsync();
+            return true;
         }
 
         public async Task<bool> UpdateEventAsync(long groupId, Event @event, long UserId)
         {
-            if (await HostMatchesCurrent(UserId, @event) == false)
-                throw new UnauthorizedAccessException();
+            @event = await _context.Events
+                .Include(e => e.EventHost)
+                .FirstOrDefaultAsync(e => e.EventId == @event.EventId);
+
+            if (HostMatchesCurrent(UserId, @event) == false)
+                return false;
 
             _context.Entry(@event).State = EntityState.Modified;
 
@@ -346,7 +353,7 @@ namespace GatheringAPI.Services
 
         Task AddEventAsync(long groupId, long eventId);
 
-        Task DeleteEventAsync(long groupId, long eventId, long UserId);
+        Task<bool> DeleteEventAsync(long groupId, long eventId, long UserId);
         Task AddUserAsync(long groupId, string userName);
         Task RemoveUserAsync(long groupId, long userId);
 
