@@ -107,7 +107,7 @@ namespace GatheringAPI.Controllers
             if (didDelete == true)
                 return Ok();
             else
-                return Unauthorized();
+                return Unauthorized("Error: Only the creator of this event or a group admin can delete it.");
         }
 
         // PUT: api/Group/5/Event/3
@@ -119,7 +119,7 @@ namespace GatheringAPI.Controllers
             if (didUpdate == true)
                 return Ok();
             else
-                return Unauthorized();
+                return Unauthorized("Error: Only the creator of this event or a group admin can update it.");
         }
 
         // POST: api/Group/5/User/jonstruve
