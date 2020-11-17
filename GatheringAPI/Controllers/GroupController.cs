@@ -76,13 +76,14 @@ namespace GatheringAPI.Controllers
         public async Task<ActionResult<Group>> DeleteGroup(long id)
         {
             long userId = UserId;
-            var @group = await repository.DeleteAsync(id, userId);
+            string didDelete = await repository.DeleteAsync(id, userId);
 
-            if (@group == null)
-            {
+            if (didDelete == "null")
                 return NotFound();
-            }
-            return @group;
+            else if (didDelete == "false")
+                return Unauthorized("You must be the owner of this group to delete it.");
+            else
+                return await repository.GetGroup(id);
         }
 
         // POST: api/Group/5/Event/3

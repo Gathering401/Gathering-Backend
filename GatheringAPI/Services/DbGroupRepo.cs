@@ -34,20 +34,28 @@ namespace GatheringAPI.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task<Group> DeleteAsync(long id, long userId)
+        public async Task<string> DeleteAsync(long id, long userId)
         {
-            IQueryable<Group> userGroups = UserGroups(userId);
-            var @group = userGroups.FirstOrDefault(g => g.GroupId == id);
+            GroupUser user = await _context.GroupUsers.FindAsync(id, userId);
 
-            if (@group == null)
+            if (user.Role == Role.owner)
             {
-                return null;
+                IQueryable<Group> userGroups = UserGroups(userId);
+                var @group = userGroups.FirstOrDefault(g => g.GroupId == id);
+
+                if (@group == null)
+                {
+                    return "null";
+                }
+                _context.Entry(@group).State = EntityState.Deleted;
+
+                await _context.SaveChangesAsync();
+
+                return "true";
             }
-            _context.Entry(@group).State = EntityState.Deleted;
-
-            await _context.SaveChangesAsync();
-
-            return null;
+            else
+                return "false";
+            
         }
 
         public GroupDto Find(long id, long userId)
@@ -84,6 +92,11 @@ namespace GatheringAPI.Services
                         .ToList()
                 })
                 .FirstOrDefault();
+        }
+
+        public async Task<Group> GetGroup(long id)
+        {
+            return await _context.Groups.FindAsync(id);
         }
 
         public IEnumerable<GroupDto> GetAll(long userId)
@@ -345,10 +358,11 @@ namespace GatheringAPI.Services
         IEnumerable<GroupDto> GetAll(long userId);
 
         GroupDto Find(long id, long userId);
+        Task<Group> GetGroup(long id);
         Task<bool> UpdateEventAsync(long groupId, Event @event, long UserId);
         Task CreateAsync(Group group, long userId);
 
-        Task<Group> DeleteAsync(long id, long userId);
+        Task<string> DeleteAsync(long id, long userId);
 
         Task<bool> UpdateAsync(Group group, long userId);
 
