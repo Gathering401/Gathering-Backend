@@ -29,7 +29,7 @@ namespace GatheringAPI.Services
         public async Task CreateAsync(Group group, long userId)
         {
             group.GroupUsers = new List<GroupUser>();
-            group.GroupUsers.Add(new GroupUser { UserId = userId });
+            group.GroupUsers.Add(new GroupUser { UserId = userId, Role = Role.owner });
             _context.Groups.Add(@group);
             await _context.SaveChangesAsync();
         }
@@ -233,7 +233,8 @@ namespace GatheringAPI.Services
             var groupUser = new GroupUser
             {
                 GroupId = groupId,
-                UserId = user.Id
+                UserId = user.Id,
+                Role = Role.user
             };
 
             _context.GroupUsers.Add(groupUser);
