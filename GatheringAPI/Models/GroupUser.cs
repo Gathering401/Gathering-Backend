@@ -12,5 +12,14 @@ namespace GatheringAPI.Models
 
         public Group Group { get; set; }
         public User User { get; set; }
+        public Role Role { get; set; }
+    }
+
+    public enum Role
+    {
+        user,
+        creator,
+        admin,
+        owner
     }
 }
