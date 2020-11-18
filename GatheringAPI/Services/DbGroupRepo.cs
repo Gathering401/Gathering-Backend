@@ -254,12 +254,27 @@ namespace GatheringAPI.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task RemoveUserAsync(long groupId, long userId)
+        public async Task<bool> RemoveUserAsync(long currentUser, long groupId, long userId)
         {
+            var user = await _context.GroupUsers.FindAsync(groupId, currentUser);
             var groupUser = await _context.GroupUsers.FindAsync(groupId, userId);
 
-            _context.GroupUsers.Remove(groupUser);
-            await _context.SaveChangesAsync();
+            if(user.Role == Role.owner)
+            {
+                _context.GroupUsers.Remove(groupUser);
+                await _context.SaveChangesAsync();
+
+                return true;
+            }
+            else if(user.Role == Role.admin && groupUser.Role != Role.owner && groupUser.Role != Role.admin)
+            {
+                _context.GroupUsers.Remove(groupUser);
+                await _context.SaveChangesAsync();
+
+                return true;
+            }
+
+            return false;
         }
 
         public string _accountSid = null;
@@ -370,7 +385,7 @@ namespace GatheringAPI.Services
 
         Task<bool> DeleteEventAsync(long groupId, long eventId, long UserId);
         Task AddUserAsync(long groupId, string userName);
-        Task RemoveUserAsync(long groupId, long userId);
+        Task<bool> RemoveUserAsync(long currentUser, long groupId, long userId);
 
         void SendInvites(Event @event);
         Task CreateEventAsync(Event @event, long userId, long groupId);
