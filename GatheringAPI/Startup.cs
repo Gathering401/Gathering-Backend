@@ -52,6 +52,7 @@ namespace GatheringAPI
             services.AddTransient<IGroup, DbGroupRepo>();
             services.AddTransient<IUser, DbUserRepo>();
             services.AddTransient<IEvent, DbEventRepo>();
+            services.AddTransient<IGroupUser, DbGroupUserRepo>();
             services.AddScoped<JWTToken>();
             services.AddAuthentication(options =>
             {
