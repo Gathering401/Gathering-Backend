@@ -16,10 +16,12 @@ namespace GatheringAPI.Controllers
     public class GroupUserController : ControllerBase
     {
         private readonly IGroupUser repository;
+        private readonly IGroup groupRepo;
 
-        public GroupUserController(IGroupUser repo)
+        public GroupUserController(IGroupUser repo, IGroup groupRepository)
         {
             repository = repo;
+            groupRepo = groupRepository;
         }
 
         private long CurrentUserId => long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
@@ -31,23 +33,19 @@ namespace GatheringAPI.Controllers
             GroupUser currentUser = await repository.GetGroupUser(groupId, CurrentUserId);
             GroupUser adjustedUser = await repository.GetGroupUser(groupId, userId);
             Role role = currentUser.Role;
+
             if(role == Role.user || role == Role.creator)
-            {
-                return Unauthorized("Must be group admin or owner to adjust user's roles.");
-            }
+                return Unauthorized("Must be a group admin or owner to adjust other user's roles.");
             if (role == Role.admin && (adjustedUser.Role == Role.admin || adjustedUser.Role == Role.owner))
-            {
-                return Unauthorized("Admin cannot change role of other admins.");
-            }
-            bool didUpdate = await repository.UpdateUserRole(groupId, userId, groupUser);
-            if (didUpdate)
-            {
-                return Ok();
-            }
-            else
-            {
+                return Unauthorized("Admins cannot change the role of other admins.");
+
+            bool didDelete = await groupRepo.RemoveUserAsync(currentUser, adjustedUser);
+            if(!didDelete)
                 return Unauthorized("That user does not currently exist in this group. Something must have gone wrong. We're working on it.");
-            }
+
+            await groupRepo.AddUserAsync(groupId, adjustedUser.User.UserName, groupUser.Role);
+
+            return Ok();
         }
     }
 }

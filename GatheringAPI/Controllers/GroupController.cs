@@ -19,11 +19,13 @@ namespace GatheringAPI.Controllers
         //private readonly GatheringDbContext _context;
         private readonly IGroup repository;
         private readonly IEvent eventRepo;
+        private readonly IGroupUser guRepo;
 
-        public GroupController(IGroup groupRepository, IEvent eventRepository)
+        public GroupController(IGroup groupRepository, IEvent eventRepository, IGroupUser groupUser)
         {
             repository = groupRepository;
             eventRepo = eventRepository;
+            guRepo = groupUser;
         }
 
         // GET: api/Group
@@ -145,7 +147,10 @@ namespace GatheringAPI.Controllers
         [HttpDelete("{groupId}/User/{userId}")]
         public async Task<ActionResult> RemoveUserFromGroup(long groupId, long userId)
         {
-            await repository.RemoveUserAsync(UserId, groupId, userId);
+            GroupUser current = await guRepo.GetGroupUser(groupId, UserId);
+            GroupUser adjusted = await guRepo.GetGroupUser(groupId, userId);
+
+            await repository.RemoveUserAsync(current, adjusted);
             return Ok();
         }
     }

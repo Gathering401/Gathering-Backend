@@ -254,21 +254,18 @@ namespace GatheringAPI.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task<bool> RemoveUserAsync(long currentUser, long groupId, long userId)
+        public async Task<bool> RemoveUserAsync(GroupUser current, GroupUser adjusted)
         {
-            var user = await _context.GroupUsers.FindAsync(groupId, currentUser);
-            var groupUser = await _context.GroupUsers.FindAsync(groupId, userId);
-
-            if(user.Role == Role.owner)
+            if(current.Role == Role.owner)
             {
-                _context.GroupUsers.Remove(groupUser);
+                _context.GroupUsers.Remove(adjusted);
                 await _context.SaveChangesAsync();
 
                 return true;
             }
-            else if(user.Role == Role.admin && groupUser.Role != Role.owner && groupUser.Role != Role.admin)
+            else if(current.Role == Role.admin && adjusted.Role != Role.owner && adjusted.Role != Role.admin)
             {
-                _context.GroupUsers.Remove(groupUser);
+                _context.GroupUsers.Remove(adjusted);
                 await _context.SaveChangesAsync();
 
                 return true;
@@ -366,6 +363,21 @@ namespace GatheringAPI.Services
         {
             return current == @event.EventHost.UserId;
         }
+
+        public async Task AddUserAsync(long groupId, string username, Role newRole)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == username);
+            
+            var groupUser = new GroupUser
+            {
+                GroupId = groupId,
+                UserId = user.Id,
+                Role = newRole
+            };
+
+            _context.GroupUsers.Add(groupUser);
+            await _context.SaveChangesAsync();
+        }
     }
 
     public interface IGroup
@@ -385,7 +397,8 @@ namespace GatheringAPI.Services
 
         Task<bool> DeleteEventAsync(long groupId, long eventId, long UserId);
         Task AddUserAsync(long groupId, string userName);
-        Task<bool> RemoveUserAsync(long currentUser, long groupId, long userId);
+        Task AddUserAsync(long groupId, string username, Role newRole);
+        Task<bool> RemoveUserAsync(GroupUser current, GroupUser adjusted);
 
         void SendInvites(Event @event);
         Task CreateEventAsync(Event @event, long userId, long groupId);
