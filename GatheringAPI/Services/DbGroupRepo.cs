@@ -99,6 +99,22 @@ namespace GatheringAPI.Services
             return await _context.Groups.FindAsync(id);
         }
 
+        public async Task<IEnumerable<GroupDto>> SearchGroupsByString(string searchFor)
+        {
+            return await _context.Groups
+                .Select(@group => new GroupDto
+                {
+                    GroupId = group.GroupId,
+                    GroupName = group.GroupName,
+                    Description = group.Description,
+                    Location = group.Location,
+                    GroupEvents = null,
+                    GroupUsers = null
+                })
+                .Where(g => g.GroupName.StartsWith(searchFor))
+                .ToListAsync();
+        }
+
         public IEnumerable<GroupDto> GetAll(long userId)
         {
             IQueryable<Group> userGroups = UserGroups(userId);
@@ -405,6 +421,7 @@ namespace GatheringAPI.Services
         Task<long> FindUserIdByUserName(string userName);
 
         bool HostMatchesCurrent(long current, Event @event);
+        Task<IEnumerable<GroupDto>> SearchGroupsByString(string searchFor);
     }
 
 }

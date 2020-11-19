@@ -153,5 +153,12 @@ namespace GatheringAPI.Controllers
             await repository.RemoveUserAsync(current, adjusted);
             return Ok();
         }
+
+        //GET: api/Group/Search/odysseus
+        [HttpGet("Search/{searchFor}")]
+        public async Task<IEnumerable<GroupDto>> SearchGroups(string searchFor)
+        {
+            return await repository.SearchGroupsByString(searchFor);
+        }
     }
 }
