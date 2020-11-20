@@ -40,10 +40,11 @@ namespace GatheringAPI.Controllers
 
         // GET: api/Group/5
         [HttpGet("{id}")]
-        public GroupDto GetGroup(long id)
+        public async Task<GroupDto> GetGroup(long id)
         {
+            GroupUser currentUser = await guRepo.GetGroupUser(id, UserId);
             long userId = UserId;
-            return repository.Find(id, userId);
+            return repository.Find(id, userId, currentUser);
         }
 
         // PUT: api/Group/5
@@ -165,12 +166,15 @@ namespace GatheringAPI.Controllers
         [HttpPost("{groupId}/Request")]
         public async Task<ActionResult> RequestToJoinGroup(long groupId)
         {
-            bool didSendRequest = await repository.RequestToJoinGroupById(groupId, UserId);
-
-            if(didSendRequest)
+            try
+            {
+                await repository.RequestToJoinGroupById(groupId, UserId);
                 return Ok();
-            else
-                return BadRequest("Already in this group.");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
         }
     }
 }

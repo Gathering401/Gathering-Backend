@@ -58,11 +58,12 @@ namespace GatheringAPI.Services
             
         }
 
-        public GroupDto Find(long id, long userId)
+        public GroupDto Find(long id, long userId, GroupUser currentUser)
         {
             IQueryable<Group> userGroups = UserGroups(userId);
             return userGroups
                 .Where(g => g.GroupId == id)
+                .Include(g => currentUser.Role == Role.admin ? g.RequestsToJoin : currentUser.Role == Role.owner ? g.RequestsToJoin : null)
                 .Select(@group => new GroupDto
                 {
                     GroupId = group.GroupId,
@@ -88,6 +89,15 @@ namespace GatheringAPI.Services
                             FirstName = gu.User.FirstName,
                             LastName = gu.User.LastName,
                             Id = gu.User.Id
+                        })
+                        .ToList(),
+                    RequestsToJoin = (currentUser.Role != Role.admin && currentUser.Role != Role.owner) ? null : group.RequestsToJoin
+                        .Select(jr => new JoinRequestDto
+                        {
+                            UserName = jr.User.UserName,
+                            FirstName = jr.User.FirstName,
+                            LastName = jr.User.LastName,
+                            Status = jr.Status
                         })
                         .ToList()
                 })
@@ -395,9 +405,16 @@ namespace GatheringAPI.Services
             await _context.SaveChangesAsync();
         }
 
-        public Task<bool> RequestToJoinGroupById(long groupId, long userId)
+        public async Task RequestToJoinGroupById(long groupId, long userId)
         {
+            JoinRequest joinRequest = new JoinRequest
+            {
+                GroupId = groupId,
+                UserId = userId
+            };
 
+            _context.JoinRequests.Add(joinRequest);
+            await _context.SaveChangesAsync();
         }
     }
 
@@ -405,7 +422,7 @@ namespace GatheringAPI.Services
     {
         IEnumerable<GroupDto> GetAll(long userId);
 
-        GroupDto Find(long id, long userId);
+        GroupDto Find(long id, long userId, GroupUser currentUser);
         Task<Group> GetGroup(long id);
         Task<bool> UpdateEventAsync(long groupId, Event @event, long UserId);
         Task CreateAsync(Group group, long userId);
@@ -427,7 +444,7 @@ namespace GatheringAPI.Services
 
         bool HostMatchesCurrent(long current, Event @event);
         Task<IEnumerable<GroupDto>> SearchGroupsByString(string searchFor);
-        Task<bool> RequestToJoinGroupById(long groupId, long userId);
+        Task RequestToJoinGroupById(long groupId, long userId);
     }
 
 }
