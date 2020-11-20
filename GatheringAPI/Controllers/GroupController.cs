@@ -160,5 +160,17 @@ namespace GatheringAPI.Controllers
         {
             return await repository.SearchGroupsByString(searchFor);
         }
+
+        //POST: api/Group/5/Request
+        [HttpPost("{groupId}/Request")]
+        public async Task<ActionResult> RequestToJoinGroup(long groupId)
+        {
+            bool didSendRequest = await repository.RequestToJoinGroupById(groupId, UserId);
+
+            if(didSendRequest)
+                return Ok();
+            else
+                return BadRequest("Already in this group.");
+        }
     }
 }

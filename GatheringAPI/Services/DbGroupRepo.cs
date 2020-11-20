@@ -394,6 +394,11 @@ namespace GatheringAPI.Services
             _context.GroupUsers.Add(groupUser);
             await _context.SaveChangesAsync();
         }
+
+        public Task<bool> RequestToJoinGroupById(long groupId, long userId)
+        {
+
+        }
     }
 
     public interface IGroup
@@ -422,6 +427,7 @@ namespace GatheringAPI.Services
 
         bool HostMatchesCurrent(long current, Event @event);
         Task<IEnumerable<GroupDto>> SearchGroupsByString(string searchFor);
+        Task<bool> RequestToJoinGroupById(long groupId, long userId);
     }
 
 }
