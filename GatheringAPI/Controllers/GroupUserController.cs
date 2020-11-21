@@ -47,5 +47,13 @@ namespace GatheringAPI.Controllers
 
             return Ok();
         }
+
+        // GET: api/GroupUser/1
+        [HttpGet("{groupId}")]
+        public async Task<GroupUser> GetCurrentUser(long groupId)
+        {
+            GroupUser currentUser = await repository.GetGroupUser(groupId, CurrentUserId);
+            return currentUser;
+        }
     }
 }
