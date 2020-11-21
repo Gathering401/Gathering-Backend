@@ -83,7 +83,7 @@ namespace GatheringAPI.Services
                             Location = ge.Event.Location
                         })
                         .ToList(),
-                    GroupUsers = group.GroupUsers
+                    GroupUsers = (currentUser.Role != Role.admin && currentUser.Role != Role.owner) ? null : group.GroupUsers
                         .Select(gu => new UserDto
                         {
                             Username = gu.User.UserName,
@@ -119,9 +119,7 @@ namespace GatheringAPI.Services
                     GroupId = group.GroupId,
                     GroupName = group.GroupName,
                     Description = group.Description,
-                    Location = group.Location,
-                    GroupEvents = null,
-                    GroupUsers = null
+                    Location = group.Location
                 })
                 .Where(g => g.GroupName.StartsWith(searchFor))
                 .ToListAsync();
@@ -136,29 +134,7 @@ namespace GatheringAPI.Services
                     GroupId = group.GroupId,
                     GroupName = group.GroupName,
                     Description = group.Description,
-                    Location = group.Location,
-                    GroupEvents = group.GroupEvents
-                        .Select(e => new GroupEventDto
-                        {
-                            EventId = e.Event.EventId,
-                            EventName = e.Event.EventName,
-                            Start = e.Event.Start,
-                            End = e.Event.End,
-                            DayOfMonth = e.Event.DayOfMonth,
-                            Cost = e.Event.Cost,
-                            Location = e.Event.Location,
-
-                        })
-                        .ToList(),
-                    GroupUsers = group.GroupUsers
-                        .Select(gu => new UserDto
-                        {
-                            Username = gu.User.UserName,
-                            FirstName = gu.User.FirstName,
-                            LastName = gu.User.LastName,
-                            Id = gu.User.Id
-                        })
-                        .ToList()
+                    Location = group.Location
                 });
         }
 
