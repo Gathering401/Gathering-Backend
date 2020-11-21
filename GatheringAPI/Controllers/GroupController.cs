@@ -149,8 +149,15 @@ namespace GatheringAPI.Controllers
         [HttpPost("{groupId}/Event")]
         public async Task<ActionResult<Event>> AddEventToGroup(Event @event, long groupId)
         {
-            await repository.CreateEventAsync(@event, UserId, groupId);
-            return Ok();    
+            GroupUser currentUser = await guRepo.GetGroupUser(groupId, UserId);
+            
+            if(currentUser.Role != Role.user)
+            {
+                await repository.CreateEventAsync(@event, UserId, groupId);
+                return Ok();
+            }
+
+            return Unauthorized("Only certain users in your group can create events. Please talk to the group admins if you think that should be you.");
         }
         
         //DELETE: api/Group/5/User/2
