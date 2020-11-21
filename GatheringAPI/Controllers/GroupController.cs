@@ -130,10 +130,19 @@ namespace GatheringAPI.Controllers
         [HttpPost("{groupId}/User/{userName}")]
         public async Task<ActionResult> AddUser(long groupId, string userName)
         {
-            await repository.AddUserAsync(groupId, userName);
+            GroupUser currentUser = await guRepo.GetGroupUser(groupId, UserId);
 
-            long userId = await repository.FindUserIdByUserName(userName);
-            return CreatedAtAction(nameof(AddUser), new { groupId, userName }, null);
+            if (currentUser.Role == Role.owner || currentUser.Role == Role.admin)
+            {
+                await repository.AddUserAsync(groupId, userName);
+
+                long userId = await repository.FindUserIdByUserName(userName);
+                return CreatedAtAction(nameof(AddUser), new { groupId, userName }, null);
+            }
+            else
+            {
+                return Unauthorized("Only admins and owners can add users to this group. If you find this to be a mistake, please talk with your group admins.");
+            }
         }
 
         //POST: api/Group/5/Event
