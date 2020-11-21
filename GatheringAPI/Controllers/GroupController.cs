@@ -176,5 +176,29 @@ namespace GatheringAPI.Controllers
                 return BadRequest(ex);
             }
         }
+
+        //POST: api/Group/5/User/5/Request/Accept
+        [HttpPost("{groupId}/User/{userId}/Request/{status}")]
+        public async Task<ActionResult> RequestToJoinGroupResponse(long groupId, long userId, JoinStatus status)
+        {
+            GroupUser currentUser = await guRepo.GetGroupUser(groupId, UserId);
+            Role role = currentUser.Role;
+
+            var userInGroup = guRepo.GetGroupUser(groupId, userId);
+            if(userInGroup == null)
+            {
+                return BadRequest("That user is already in the group. Something went wrong.");
+            }
+
+            if(role == Role.owner || role == Role.admin)
+            {
+                await repository.RespondToGroupJoinRequest(groupId, userId, status);
+                return Ok();
+            }
+            else
+            {
+                return Unauthorized("Only admins or owners can respond to join requests. Please talk to the groups admins if you believe this to be a mistake.");
+            }
+        }
     }
 }

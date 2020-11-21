@@ -96,7 +96,8 @@ namespace GatheringAPI.Services
                             UserName = jr.User.UserName,
                             FirstName = jr.User.FirstName,
                             LastName = jr.User.LastName,
-                            Status = jr.Status
+                            Status = jr.Status,
+                            UserId = jr.UserId
                         })
                         .ToList()
                 })
@@ -415,6 +416,26 @@ namespace GatheringAPI.Services
             _context.JoinRequests.Add(joinRequest);
             await _context.SaveChangesAsync();
         }
+
+        public async Task RespondToGroupJoinRequest(long groupId, long userId, JoinStatus status)
+        {
+            if(status == JoinStatus.accepted)
+            {
+                GroupUser groupUser = new GroupUser
+                {
+                    GroupId = groupId,
+                    UserId = userId,
+                    Role = Role.user
+                };
+
+                _context.GroupUsers.Add(groupUser);
+                await _context.SaveChangesAsync();
+            }
+
+            var joinRequest = await _context.JoinRequests.FindAsync(groupId, userId);
+            _context.JoinRequests.Remove(joinRequest);
+            await _context.SaveChangesAsync();
+        }
     }
 
     public interface IGroup
@@ -444,6 +465,7 @@ namespace GatheringAPI.Services
         bool HostMatchesCurrent(long current, Event @event);
         Task<IEnumerable<GroupDto>> SearchGroupsByString(string searchFor);
         Task RequestToJoinGroupById(long groupId, long userId);
+        Task RespondToGroupJoinRequest(long groupId, long userId, JoinStatus status);
     }
 
 }

@@ -8,5 +8,6 @@ namespace GatheringAPI.Models.Api
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public JoinStatus Status { get; set; }
+        public long UserId { get; set; }
     }
 }
