@@ -19,11 +19,13 @@ namespace GatheringAPI.Services
         public IConfiguration Configuration { get; }
 
         private readonly GatheringDbContext _context;
+        private readonly IGroupUser guRepo;
 
-        public DbGroupRepo(GatheringDbContext context, IConfiguration configuration)
+        public DbGroupRepo(GatheringDbContext context, IConfiguration configuration, IGroupUser groupUserRepo)
         {
             _context = context;
             Configuration = configuration;
+            guRepo = groupUserRepo;
         }
 
         public async Task CreateAsync(Group group, long userId)
@@ -217,7 +219,11 @@ namespace GatheringAPI.Services
                 .FirstOrDefaultAsync(e => e.EventId == eventId);
 
             if (HostMatchesCurrent(UserId, @event) == false)
-                return false;
+            {
+                GroupUser currentUser = await guRepo.GetGroupUser(groupId, UserId);
+                if (currentUser.Role == Role.user || currentUser.Role == Role.creator)
+                    return false;
+            }
 
             var groupEvent = await _context.GroupEvents.FindAsync(groupId, eventId);
 
@@ -233,7 +239,12 @@ namespace GatheringAPI.Services
                 .FirstOrDefaultAsync(e => e.EventId == @event.EventId);
 
             if (HostMatchesCurrent(UserId, @event) == false)
-                return false;
+            {
+                GroupUser currentUser = await guRepo.GetGroupUser(groupId, UserId);
+                if(currentUser.Role == Role.user || currentUser.Role == Role.creator)
+                    return false;
+            }
+                
 
             _context.Entry(@event).State = EntityState.Modified;
 
