@@ -63,7 +63,6 @@ namespace GatheringAPI.Services
             IQueryable<Group> userGroups = UserGroups(userId);
             return userGroups
                 .Where(g => g.GroupId == id)
-                .Include(g => currentUser.Role == Role.admin ? g.RequestsToJoin : currentUser.Role == Role.owner ? g.RequestsToJoin : null)
                 .Select(@group => new GroupDto
                 {
                     GroupId = group.GroupId,
