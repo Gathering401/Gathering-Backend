@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using GatheringAPI.Models;
 using GatheringAPI.Services;
 using System.Security.Claims;
+using GatheringAPI.Models.Api;
 
 namespace GatheringAPI.Controllers
 {
@@ -50,9 +51,9 @@ namespace GatheringAPI.Controllers
 
         // GET: api/GroupUser/1
         [HttpGet("{groupId}")]
-        public async Task<GroupUser> GetCurrentUser(long groupId)
+        public async Task<GroupUserDto> GetCurrentUser(long groupId)
         {
-            GroupUser currentUser = await repository.GetGroupUser(groupId, CurrentUserId);
+            GroupUserDto currentUser = await repository.GetGroupUserDto(groupId, CurrentUserId);
             return currentUser;
         }
     }

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using GatheringAPI.Models.Api;
 
 namespace GatheringAPI.Services
 {
@@ -33,10 +34,33 @@ namespace GatheringAPI.Services
                 return null;
             }
         }
+
+        public async Task<GroupUserDto> GetGroupUserDto(long groupId, long userId)
+        {
+            try
+            {
+                return await _context.GroupUsers
+                    .Select(gu => new GroupUserDto
+                    {
+                        UserId = gu.UserId,
+                        GroupId = gu.GroupId,
+                        User = gu.User,
+                        Group = gu.Group,
+                        RoleString = gu.Role.ToString(),
+                        Role = gu.Role
+                    })
+                    .FirstOrDefaultAsync(gu => gu.GroupId == groupId && gu.UserId == userId);
+            }
+            catch
+            {
+                return null;
+            }
+        }
     }
 
     public interface IGroupUser
     {
         Task<GroupUser> GetGroupUser(long groupId, long userId);
+        Task<GroupUserDto> GetGroupUserDto(long groupId, long userId);
     }
 }
