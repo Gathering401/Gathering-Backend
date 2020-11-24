@@ -84,12 +84,14 @@ namespace GatheringAPI.Services
                         })
                         .ToList(),
                     GroupUsers = (currentUser.Role != Role.admin && currentUser.Role != Role.owner) ? null : group.GroupUsers
-                        .Select(gu => new UserDto
+                        .Select(gu => new GroupUserDto
                         {
-                            Username = gu.User.UserName,
-                            FirstName = gu.User.FirstName,
-                            LastName = gu.User.LastName,
-                            Id = gu.User.Id
+                            UserId = gu.UserId,
+                            User = gu.User,
+                            GroupId = gu.GroupId,
+                            Group = gu.Group,
+                            Role = gu.Role,
+                            RoleString = gu.Role.ToString()
                         })
                         .ToList(),
                     RequestsToJoin = (currentUser.Role != Role.admin && currentUser.Role != Role.owner) ? null : group.RequestsToJoin
