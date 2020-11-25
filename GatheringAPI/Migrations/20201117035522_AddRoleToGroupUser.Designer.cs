@@ -4,14 +4,16 @@ using GatheringAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace GatheringAPI.Migrations
 {
     [DbContext(typeof(GatheringDbContext))]
-    partial class GatheringDbContextModelSnapshot : ModelSnapshot
+    [Migration("20201117035522_AddRoleToGroupUser")]
+    partial class AddRoleToGroupUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -177,24 +179,6 @@ namespace GatheringAPI.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("HostedEvents");
-                });
-
-            modelBuilder.Entity("GatheringAPI.Models.JoinRequest", b =>
-                {
-                    b.Property<long>("GroupId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("UserId")
-                        .HasColumnType("bigint");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.HasKey("GroupId", "UserId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("JoinRequests");
                 });
 
             modelBuilder.Entity("GatheringAPI.Models.User", b =>
@@ -475,21 +459,6 @@ namespace GatheringAPI.Migrations
 
                     b.HasOne("GatheringAPI.Models.User", "User")
                         .WithMany("HostedEvents")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("GatheringAPI.Models.JoinRequest", b =>
-                {
-                    b.HasOne("GatheringAPI.Models.Group", "Group")
-                        .WithMany("RequestsToJoin")
-                        .HasForeignKey("GroupId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("GatheringAPI.Models.User", "User")
-                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();

@@ -19,11 +19,13 @@ namespace GatheringAPI.Controllers
         //private readonly GatheringDbContext _context;
         private readonly IGroup repository;
         private readonly IEvent eventRepo;
+        private readonly IGroupUser guRepo;
 
-        public GroupController(IGroup groupRepository, IEvent eventRepository)
+        public GroupController(IGroup groupRepository, IEvent eventRepository, IGroupUser groupUser)
         {
             repository = groupRepository;
             eventRepo = eventRepository;
+            guRepo = groupUser;
         }
 
         // GET: api/Group
@@ -38,10 +40,11 @@ namespace GatheringAPI.Controllers
 
         // GET: api/Group/5
         [HttpGet("{id}")]
-        public GroupDto GetGroup(long id)
+        public async Task<GroupDto> GetGroup(long id)
         {
+            GroupUser currentUser = await guRepo.GetGroupUser(id, UserId);
             long userId = UserId;
-            return repository.Find(id, userId);
+            return repository.Find(id, userId, currentUser);
         }
 
         // PUT: api/Group/5
@@ -76,13 +79,14 @@ namespace GatheringAPI.Controllers
         public async Task<ActionResult<Group>> DeleteGroup(long id)
         {
             long userId = UserId;
-            var @group = await repository.DeleteAsync(id, userId);
+            string didDelete = await repository.DeleteAsync(id, userId);
 
-            if (@group == null)
-            {
+            if (didDelete == "null")
                 return NotFound();
-            }
-            return @group;
+            else if (didDelete == "false")
+                return Unauthorized("You must be the owner of this group to delete it.");
+            else
+                return await repository.GetGroup(id);
         }
 
         // POST: api/Group/5/Event/3
@@ -107,7 +111,7 @@ namespace GatheringAPI.Controllers
             if (didDelete == true)
                 return Ok();
             else
-                return Unauthorized();
+                return Unauthorized("Error: Only the creator of this event or a group admin can delete it.");
         }
 
         // PUT: api/Group/5/Event/3
@@ -119,33 +123,98 @@ namespace GatheringAPI.Controllers
             if (didUpdate == true)
                 return Ok();
             else
-                return Unauthorized();
+                return Unauthorized("Error: Only the creator of this event or a group admin can update it.");
         }
 
         // POST: api/Group/5/User/jonstruve
         [HttpPost("{groupId}/User/{userName}")]
         public async Task<ActionResult> AddUser(long groupId, string userName)
         {
-            await repository.AddUserAsync(groupId, userName);
+            GroupUser currentUser = await guRepo.GetGroupUser(groupId, UserId);
 
-            long userId = await repository.FindUserIdByUserName(userName);
-            return CreatedAtAction(nameof(AddUser), new { groupId, userName }, null);
+            if (currentUser.Role == Role.owner || currentUser.Role == Role.admin)
+            {
+                await repository.AddUserAsync(groupId, userName);
+
+                long userId = await repository.FindUserIdByUserName(userName);
+                return CreatedAtAction(nameof(AddUser), new { groupId, userName }, null);
+            }
+            else
+            {
+                return Unauthorized("Only admins and owners can add users to this group. If you find this to be a mistake, please talk with your group admins.");
+            }
         }
 
         //POST: api/Group/5/Event
         [HttpPost("{groupId}/Event")]
         public async Task<ActionResult<Event>> AddEventToGroup(Event @event, long groupId)
         {
-            await repository.CreateEventAsync(@event, UserId, groupId);
-            return Ok();    
+            GroupUser currentUser = await guRepo.GetGroupUser(groupId, UserId);
+            
+            if(currentUser.Role != Role.user)
+            {
+                await repository.CreateEventAsync(@event, UserId, groupId);
+                return Ok();
+            }
+
+            return Unauthorized("Only certain users in your group can create events. Please talk to the group admins if you think that should be you.");
         }
         
         //DELETE: api/Group/5/User/2
         [HttpDelete("{groupId}/User/{userId}")]
         public async Task<ActionResult> RemoveUserFromGroup(long groupId, long userId)
         {
-            await repository.RemoveUserAsync(groupId, userId);
+            GroupUser current = await guRepo.GetGroupUser(groupId, UserId);
+            GroupUser adjusted = await guRepo.GetGroupUser(groupId, userId);
+
+            await repository.RemoveUserAsync(current, adjusted);
             return Ok();
+        }
+
+        //GET: api/Group/Search/odysseus
+        [HttpGet("Search/{searchFor}")]
+        public async Task<IEnumerable<GroupDto>> SearchGroups(string searchFor)
+        {
+            return await repository.SearchGroupsByString(searchFor);
+        }
+
+        //POST: api/Group/5/Request
+        [HttpPost("{groupId}/Request")]
+        public async Task<ActionResult> RequestToJoinGroup(long groupId)
+        {
+            try
+            {
+                await repository.RequestToJoinGroupById(groupId, UserId);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
+        }
+
+        //POST: api/Group/5/User/5/Request/Accept
+        [HttpPost("{groupId}/User/{userId}/Request/{status}")]
+        public async Task<ActionResult> RequestToJoinGroupResponse(long groupId, long userId, JoinStatus status)
+        {
+            GroupUser currentUser = await guRepo.GetGroupUser(groupId, UserId);
+            Role role = currentUser.Role;
+
+            var userInGroup = guRepo.GetGroupUser(groupId, userId);
+            if(userInGroup == null)
+            {
+                return BadRequest("That user is already in the group. Something went wrong.");
+            }
+
+            if(role == Role.owner || role == Role.admin)
+            {
+                await repository.RespondToGroupJoinRequest(groupId, userId, status);
+                return Ok();
+            }
+            else
+            {
+                return Unauthorized("Only admins or owners can respond to join requests. Please talk to the groups admins if you believe this to be a mistake.");
+            }
         }
     }
 }

@@ -19,38 +19,48 @@ namespace GatheringAPI.Services
         public IConfiguration Configuration { get; }
 
         private readonly GatheringDbContext _context;
+        private readonly IGroupUser guRepo;
 
-        public DbGroupRepo(GatheringDbContext context, IConfiguration configuration)
+        public DbGroupRepo(GatheringDbContext context, IConfiguration configuration, IGroupUser groupUserRepo)
         {
             _context = context;
             Configuration = configuration;
+            guRepo = groupUserRepo;
         }
 
         public async Task CreateAsync(Group group, long userId)
         {
             group.GroupUsers = new List<GroupUser>();
-            group.GroupUsers.Add(new GroupUser { UserId = userId });
+            group.GroupUsers.Add(new GroupUser { UserId = userId, Role = Role.owner });
             _context.Groups.Add(@group);
             await _context.SaveChangesAsync();
         }
 
-        public async Task<Group> DeleteAsync(long id, long userId)
+        public async Task<string> DeleteAsync(long id, long userId)
         {
-            IQueryable<Group> userGroups = UserGroups(userId);
-            var @group = userGroups.FirstOrDefault(g => g.GroupId == id);
+            GroupUser user = await _context.GroupUsers.FindAsync(id, userId);
 
-            if (@group == null)
+            if (user.Role == Role.owner)
             {
-                return null;
+                IQueryable<Group> userGroups = UserGroups(userId);
+                var @group = userGroups.FirstOrDefault(g => g.GroupId == id);
+
+                if (@group == null)
+                {
+                    return "null";
+                }
+                _context.Entry(@group).State = EntityState.Deleted;
+
+                await _context.SaveChangesAsync();
+
+                return "true";
             }
-            _context.Entry(@group).State = EntityState.Deleted;
-
-            await _context.SaveChangesAsync();
-
-            return null;
+            else
+                return "false";
+            
         }
 
-        public GroupDto Find(long id, long userId)
+        public GroupDto Find(long id, long userId, GroupUser currentUser)
         {
             IQueryable<Group> userGroups = UserGroups(userId);
             return userGroups
@@ -73,17 +83,48 @@ namespace GatheringAPI.Services
                             Location = ge.Event.Location
                         })
                         .ToList(),
-                    GroupUsers = group.GroupUsers
-                        .Select(gu => new UserDto
+                    GroupUsers = (currentUser.Role != Role.admin && currentUser.Role != Role.owner) ? null : group.GroupUsers
+                        .Select(gu => new GroupUserDto
                         {
-                            Username = gu.User.UserName,
-                            FirstName = gu.User.FirstName,
-                            LastName = gu.User.LastName,
-                            Id = gu.User.Id
+                            UserId = gu.UserId,
+                            User = gu.User,
+                            GroupId = gu.GroupId,
+                            Group = gu.Group,
+                            Role = gu.Role,
+                            RoleString = gu.Role.ToString()
+                        })
+                        .ToList(),
+                    RequestsToJoin = (currentUser.Role != Role.admin && currentUser.Role != Role.owner) ? null : group.RequestsToJoin
+                        .Select(jr => new JoinRequestDto
+                        {
+                            UserName = jr.User.UserName,
+                            FirstName = jr.User.FirstName,
+                            LastName = jr.User.LastName,
+                            Status = jr.Status,
+                            UserId = jr.UserId
                         })
                         .ToList()
                 })
                 .FirstOrDefault();
+        }
+
+        public async Task<Group> GetGroup(long id)
+        {
+            return await _context.Groups.FindAsync(id);
+        }
+
+        public async Task<IEnumerable<GroupDto>> SearchGroupsByString(string searchFor)
+        {
+            return await _context.Groups
+                .Select(@group => new GroupDto
+                {
+                    GroupId = group.GroupId,
+                    GroupName = group.GroupName,
+                    Description = group.Description,
+                    Location = group.Location
+                })
+                .Where(g => g.GroupName.StartsWith(searchFor))
+                .ToListAsync();
         }
 
         public IEnumerable<GroupDto> GetAll(long userId)
@@ -95,29 +136,7 @@ namespace GatheringAPI.Services
                     GroupId = group.GroupId,
                     GroupName = group.GroupName,
                     Description = group.Description,
-                    Location = group.Location,
-                    GroupEvents = group.GroupEvents
-                        .Select(e => new GroupEventDto
-                        {
-                            EventId = e.Event.EventId,
-                            EventName = e.Event.EventName,
-                            Start = e.Event.Start,
-                            End = e.Event.End,
-                            DayOfMonth = e.Event.DayOfMonth,
-                            Cost = e.Event.Cost,
-                            Location = e.Event.Location,
-
-                        })
-                        .ToList(),
-                    GroupUsers = group.GroupUsers
-                        .Select(gu => new UserDto
-                        {
-                            Username = gu.User.UserName,
-                            FirstName = gu.User.FirstName,
-                            LastName = gu.User.LastName,
-                            Id = gu.User.Id
-                        })
-                        .ToList()
+                    Location = group.Location
                 });
         }
 
@@ -178,7 +197,11 @@ namespace GatheringAPI.Services
                 .FirstOrDefaultAsync(e => e.EventId == eventId);
 
             if (HostMatchesCurrent(UserId, @event) == false)
-                return false;
+            {
+                GroupUser currentUser = await guRepo.GetGroupUser(groupId, UserId);
+                if (currentUser.Role == Role.user || currentUser.Role == Role.creator)
+                    return false;
+            }
 
             var groupEvent = await _context.GroupEvents.FindAsync(groupId, eventId);
 
@@ -194,7 +217,12 @@ namespace GatheringAPI.Services
                 .FirstOrDefaultAsync(e => e.EventId == @event.EventId);
 
             if (HostMatchesCurrent(UserId, @event) == false)
-                return false;
+            {
+                GroupUser currentUser = await guRepo.GetGroupUser(groupId, UserId);
+                if(currentUser.Role == Role.user || currentUser.Role == Role.creator)
+                    return false;
+            }
+                
 
             _context.Entry(@event).State = EntityState.Modified;
 
@@ -233,19 +261,32 @@ namespace GatheringAPI.Services
             var groupUser = new GroupUser
             {
                 GroupId = groupId,
-                UserId = user.Id
+                UserId = user.Id,
+                Role = Role.user
             };
 
             _context.GroupUsers.Add(groupUser);
             await _context.SaveChangesAsync();
         }
 
-        public async Task RemoveUserAsync(long groupId, long userId)
+        public async Task<bool> RemoveUserAsync(GroupUser current, GroupUser adjusted)
         {
-            var groupUser = await _context.GroupUsers.FindAsync(groupId, userId);
+            if(current.Role == Role.owner)
+            {
+                _context.GroupUsers.Remove(adjusted);
+                await _context.SaveChangesAsync();
 
-            _context.GroupUsers.Remove(groupUser);
-            await _context.SaveChangesAsync();
+                return true;
+            }
+            else if(current.Role == Role.admin && adjusted.Role != Role.owner && adjusted.Role != Role.admin)
+            {
+                _context.GroupUsers.Remove(adjusted);
+                await _context.SaveChangesAsync();
+
+                return true;
+            }
+
+            return false;
         }
 
         public string _accountSid = null;
@@ -337,17 +378,65 @@ namespace GatheringAPI.Services
         {
             return current == @event.EventHost.UserId;
         }
+
+        public async Task AddUserAsync(long groupId, string username, Role newRole)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == username);
+            
+            var groupUser = new GroupUser
+            {
+                GroupId = groupId,
+                UserId = user.Id,
+                Role = newRole
+            };
+
+            _context.GroupUsers.Add(groupUser);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task RequestToJoinGroupById(long groupId, long userId)
+        {
+            JoinRequest joinRequest = new JoinRequest
+            {
+                GroupId = groupId,
+                UserId = userId
+            };
+
+            _context.JoinRequests.Add(joinRequest);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task RespondToGroupJoinRequest(long groupId, long userId, JoinStatus status)
+        {
+            if(status == JoinStatus.accepted)
+            {
+                GroupUser groupUser = new GroupUser
+                {
+                    GroupId = groupId,
+                    UserId = userId,
+                    Role = Role.user
+                };
+
+                _context.GroupUsers.Add(groupUser);
+                await _context.SaveChangesAsync();
+            }
+
+            var joinRequest = await _context.JoinRequests.FindAsync(groupId, userId);
+            _context.JoinRequests.Remove(joinRequest);
+            await _context.SaveChangesAsync();
+        }
     }
 
     public interface IGroup
     {
         IEnumerable<GroupDto> GetAll(long userId);
 
-        GroupDto Find(long id, long userId);
+        GroupDto Find(long id, long userId, GroupUser currentUser);
+        Task<Group> GetGroup(long id);
         Task<bool> UpdateEventAsync(long groupId, Event @event, long UserId);
         Task CreateAsync(Group group, long userId);
 
-        Task<Group> DeleteAsync(long id, long userId);
+        Task<string> DeleteAsync(long id, long userId);
 
         Task<bool> UpdateAsync(Group group, long userId);
 
@@ -355,13 +444,17 @@ namespace GatheringAPI.Services
 
         Task<bool> DeleteEventAsync(long groupId, long eventId, long UserId);
         Task AddUserAsync(long groupId, string userName);
-        Task RemoveUserAsync(long groupId, long userId);
+        Task AddUserAsync(long groupId, string username, Role newRole);
+        Task<bool> RemoveUserAsync(GroupUser current, GroupUser adjusted);
 
         void SendInvites(Event @event);
         Task CreateEventAsync(Event @event, long userId, long groupId);
         Task<long> FindUserIdByUserName(string userName);
 
         bool HostMatchesCurrent(long current, Event @event);
+        Task<IEnumerable<GroupDto>> SearchGroupsByString(string searchFor);
+        Task RequestToJoinGroupById(long groupId, long userId);
+        Task RespondToGroupJoinRequest(long groupId, long userId, JoinStatus status);
     }
 
 }
