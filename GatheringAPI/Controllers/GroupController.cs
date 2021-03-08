@@ -131,13 +131,21 @@ namespace GatheringAPI.Controllers
         public async Task<ActionResult> AddUser(long groupId, string userName)
         {
             GroupUser currentUser = await guRepo.GetGroupUser(groupId, UserId);
+            GroupDto currentGroup = await GetGroup(groupId);
 
             if (currentUser.Role == Role.owner || currentUser.Role == Role.admin)
             {
-                await repository.AddUserAsync(groupId, userName);
+                if(currentGroup.GroupUsers.Count < currentGroup.MaxUsers)
+                {
+                    await repository.AddUserAsync(groupId, userName);
 
-                long userId = await repository.FindUserIdByUserName(userName);
-                return CreatedAtAction(nameof(AddUser), new { groupId, userName }, null);
+                    long userId = await repository.FindUserIdByUserName(userName);
+                    return CreatedAtAction(nameof(AddUser), new { groupId, userName }, null);
+                }
+                else
+                {
+                    return BadRequest("Cannot add users to this group. This group is currently full. Please upgrade to add more users.");
+                }
             }
             else
             {

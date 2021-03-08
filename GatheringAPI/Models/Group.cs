@@ -21,5 +21,21 @@ namespace GatheringAPI.Models
         public bool IsPublic { get; set; } = false;
 
         public List<JoinRequest> RequestsToJoin { get; set; }
+
+        public GroupSizes GroupSize { get; set; }
+
+        public long MaxUsers { get; set; }
+
+        public long MaxEvents { get; set; }
+    }
+
+    public enum GroupSizes
+    {
+        free = 20,
+        extraSmall = 50,
+        small = 100,
+        medium = 250,
+        large = 1000,
+        infinite = 1001
     }
 }

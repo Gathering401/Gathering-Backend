@@ -19,6 +19,8 @@ namespace GatheringAPI.Models.Api
         public List<GroupUserDto> GroupUsers { get; set; }
 
         public List<JoinRequestDto> RequestsToJoin { get; set; }
+
+        public long MaxUsers { get; set; }
     }
 
     public class GroupEventDto

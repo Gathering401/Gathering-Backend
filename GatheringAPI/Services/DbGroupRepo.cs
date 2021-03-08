@@ -32,6 +32,40 @@ namespace GatheringAPI.Services
         {
             group.GroupUsers = new List<GroupUser>();
             group.GroupUsers.Add(new GroupUser { UserId = userId, Role = Role.owner });
+            group.IsPublic = false;
+
+            switch (group.GroupSize)
+            {
+                case GroupSizes.free:
+                    group.MaxUsers = 20;
+                    group.MaxEvents = 300;
+                    group.IsPublic = true;
+                    break;
+                case GroupSizes.extraSmall:
+                    group.MaxUsers = 50;
+                    group.MaxEvents = 750;
+                    break;
+                case GroupSizes.small:
+                    group.MaxUsers = 100;
+                    group.MaxEvents = 1500;
+                    break;
+                case GroupSizes.medium:
+                    group.MaxUsers = 250;
+                    group.MaxEvents = 3750;
+                    break;
+                case GroupSizes.large:
+                    group.MaxUsers = 1000;
+                    group.MaxEvents = 15000;
+                    break;
+                case GroupSizes.infinite:
+                    group.MaxUsers = -1;
+                    group.MaxEvents = -1;
+                    break;
+                default:
+                    Console.WriteLine("Should not get here.");
+                    break;
+            }
+
             _context.Groups.Add(@group);
             await _context.SaveChangesAsync();
         }
