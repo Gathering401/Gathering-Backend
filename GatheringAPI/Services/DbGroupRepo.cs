@@ -430,14 +430,31 @@ namespace GatheringAPI.Services
 
         public async Task RequestToJoinGroupById(long groupId, long userId)
         {
-            JoinRequest joinRequest = new JoinRequest
-            {
-                GroupId = groupId,
-                UserId = userId
-            };
+            Group currentGroup = await GetGroup(groupId);
 
-            _context.JoinRequests.Add(joinRequest);
-            await _context.SaveChangesAsync();
+            if(currentGroup.IsPublic == false)
+            {
+                JoinRequest joinRequest = new JoinRequest
+                {
+                    GroupId = groupId,
+                    UserId = userId
+                };
+
+                _context.JoinRequests.Add(joinRequest);
+                await _context.SaveChangesAsync();
+            }
+            else
+            {
+                var groupUser = new GroupUser
+                {
+                    GroupId = groupId,
+                    UserId = userId,
+                    Role = Role.user
+                };
+
+                _context.GroupUsers.Add(groupUser);
+                await _context.SaveChangesAsync();
+            }
         }
 
         public async Task RespondToGroupJoinRequest(long groupId, long userId, JoinStatus status)
