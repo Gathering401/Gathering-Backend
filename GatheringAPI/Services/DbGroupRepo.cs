@@ -119,9 +119,9 @@ namespace GatheringAPI.Services
                         .Select(gu => new GroupUserDto
                         {
                             UserId = gu.UserId,
-                            User = gu.User,
+                            User = null,
                             GroupId = gu.GroupId,
-                            Group = gu.Group,
+                            Group = null,
                             Role = gu.Role,
                             RoleString = gu.Role.ToString()
                         })
@@ -135,7 +135,9 @@ namespace GatheringAPI.Services
                             Status = jr.Status,
                             UserId = jr.UserId
                         })
-                        .ToList()
+                        .ToList(),
+                    MaxUsers = group.MaxUsers,
+                    MaxEvents = group.MaxEvents
                 })
                 .FirstOrDefault();
         }
