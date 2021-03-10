@@ -22,6 +22,7 @@ namespace GatheringAPI.Models
 
         public List<JoinRequest> RequestsToJoin { get; set; }
 
+        [Required]
         public GroupSizes GroupSize { get; set; }
 
         public long MaxUsers { get; set; }
