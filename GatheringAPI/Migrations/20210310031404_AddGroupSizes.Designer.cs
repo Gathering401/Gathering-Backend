@@ -4,14 +4,16 @@ using GatheringAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace GatheringAPI.Migrations
 {
     [DbContext(typeof(GatheringDbContext))]
-    partial class GatheringDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210310031404_AddGroupSizes")]
+    partial class AddGroupSizes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

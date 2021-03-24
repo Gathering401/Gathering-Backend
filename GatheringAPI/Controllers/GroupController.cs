@@ -131,13 +131,22 @@ namespace GatheringAPI.Controllers
         public async Task<ActionResult> AddUser(long groupId, string userName)
         {
             GroupUser currentUser = await guRepo.GetGroupUser(groupId, UserId);
+            GroupDto currentGroup = await GetGroup(groupId);
 
             if (currentUser.Role == Role.owner || currentUser.Role == Role.admin)
             {
-                await repository.AddUserAsync(groupId, userName);
+                Console.WriteLine($"{currentGroup.GroupUsers.Count}, {currentGroup.MaxUsers}");
+                if(currentGroup.GroupUsers.Count < currentGroup.MaxUsers || currentGroup.MaxUsers == -1)
+                {
+                    await repository.AddUserAsync(groupId, userName);
 
-                long userId = await repository.FindUserIdByUserName(userName);
-                return CreatedAtAction(nameof(AddUser), new { groupId, userName }, null);
+                    long userId = await repository.FindUserIdByUserName(userName);
+                    return CreatedAtAction(nameof(AddUser), new { groupId, userName }, null);
+                }
+                else
+                {
+                    return BadRequest("Cannot add users to this group. This group is currently full. Please upgrade to add more users.");
+                }
             }
             else
             {
@@ -150,13 +159,20 @@ namespace GatheringAPI.Controllers
         public async Task<ActionResult<Event>> AddEventToGroup(Event @event, long groupId)
         {
             GroupUser currentUser = await guRepo.GetGroupUser(groupId, UserId);
+            GroupDto currentGroup = await GetGroup(groupId);
             
             if(currentUser.Role != Role.user)
             {
-                await repository.CreateEventAsync(@event, UserId, groupId);
-                return Ok();
+                if(currentGroup.GroupEvents.Count < currentGroup.MaxEvents || currentGroup.MaxEvents == -1)
+                {
+                    await repository.CreateEventAsync(@event, UserId, groupId);
+                    return Ok();
+                }
+                else
+                {
+                    return BadRequest("Your group has reached the maximum number of created events for the month. Please upgrade to create more.");
+                }
             }
-
             return Unauthorized("Only certain users in your group can create events. Please talk to the group admins if you think that should be you.");
         }
         

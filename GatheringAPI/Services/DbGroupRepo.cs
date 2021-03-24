@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using GatheringAPI.Data;
 using GatheringAPI.Models;
 using GatheringAPI.Models.Api;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Twilio;
@@ -32,6 +30,40 @@ namespace GatheringAPI.Services
         {
             group.GroupUsers = new List<GroupUser>();
             group.GroupUsers.Add(new GroupUser { UserId = userId, Role = Role.owner });
+            group.IsPublic = false;
+
+            switch (group.GroupSize)
+            {
+                case GroupSizes.free:
+                    group.MaxUsers = 20;
+                    group.MaxEvents = 300;
+                    group.IsPublic = true;
+                    break;
+                case GroupSizes.extraSmall:
+                    group.MaxUsers = 50;
+                    group.MaxEvents = 750;
+                    break;
+                case GroupSizes.small:
+                    group.MaxUsers = 100;
+                    group.MaxEvents = 1500;
+                    break;
+                case GroupSizes.medium:
+                    group.MaxUsers = 250;
+                    group.MaxEvents = 3750;
+                    break;
+                case GroupSizes.large:
+                    group.MaxUsers = 1000;
+                    group.MaxEvents = 15000;
+                    break;
+                case GroupSizes.infinite:
+                    group.MaxUsers = -1;
+                    group.MaxEvents = -1;
+                    break;
+                default:
+                    Console.WriteLine("Should not get here.");
+                    break;
+            }
+
             _context.Groups.Add(@group);
             await _context.SaveChangesAsync();
         }
@@ -87,9 +119,9 @@ namespace GatheringAPI.Services
                         .Select(gu => new GroupUserDto
                         {
                             UserId = gu.UserId,
-                            User = gu.User,
+                            User = null,
                             GroupId = gu.GroupId,
-                            Group = gu.Group,
+                            Group = null,
                             Role = gu.Role,
                             RoleString = gu.Role.ToString()
                         })
@@ -103,7 +135,9 @@ namespace GatheringAPI.Services
                             Status = jr.Status,
                             UserId = jr.UserId
                         })
-                        .ToList()
+                        .ToList(),
+                    MaxUsers = group.MaxUsers,
+                    MaxEvents = group.MaxEvents
                 })
                 .FirstOrDefault();
         }
@@ -396,14 +430,31 @@ namespace GatheringAPI.Services
 
         public async Task RequestToJoinGroupById(long groupId, long userId)
         {
-            JoinRequest joinRequest = new JoinRequest
-            {
-                GroupId = groupId,
-                UserId = userId
-            };
+            Group currentGroup = await GetGroup(groupId);
 
-            _context.JoinRequests.Add(joinRequest);
-            await _context.SaveChangesAsync();
+            if(currentGroup.IsPublic == false)
+            {
+                JoinRequest joinRequest = new JoinRequest
+                {
+                    GroupId = groupId,
+                    UserId = userId
+                };
+
+                _context.JoinRequests.Add(joinRequest);
+                await _context.SaveChangesAsync();
+            }
+            else
+            {
+                var groupUser = new GroupUser
+                {
+                    GroupId = groupId,
+                    UserId = userId,
+                    Role = Role.user
+                };
+
+                _context.GroupUsers.Add(groupUser);
+                await _context.SaveChangesAsync();
+            }
         }
 
         public async Task RespondToGroupJoinRequest(long groupId, long userId, JoinStatus status)
