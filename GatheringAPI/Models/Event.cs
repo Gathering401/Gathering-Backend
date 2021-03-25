@@ -12,22 +12,10 @@ namespace GatheringAPI.Models
         [Required]
         public string EventName { get; set; }
 
-        // Stretchy Goaly
-        // [Required]
-        // public Repeat EventRepeat { get; set; }
-
         [Required]
         public DateTime Start { get; set; }
 
         public DateTime? End { get; set; }
-
-        // Stretchy Goaly
-        // public DayOfWeek Weekday { get; set; }
-
-        public int DayOfMonth { get; set; }
-
-        // Stretchy Goaly
-        // public Poll Poll { get; set; }
 
         [Required]
         public bool Food { get; set; }
@@ -48,12 +36,5 @@ namespace GatheringAPI.Models
         public HostedEvent EventHost { get; set; }
 
         public List<EventComment> Comments { get; set; }
-    }
-    public enum Repeat
-    {
-        Weekly,
-        Monthly,
-        Yearly,
-        Once
     }
 }
