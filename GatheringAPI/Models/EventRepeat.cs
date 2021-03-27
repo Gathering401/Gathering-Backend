@@ -10,6 +10,10 @@ namespace GatheringAPI.Models
         [Required]
         public Repeat ERepeat { get; set; }
 
+        public long EventId { get; set; }
+
+        public Event Event { get; set; }
+
         public DayOfWeek DayOfWeek { get; set; }
 
         public int DayOfMonth { get; set; }
@@ -27,17 +31,6 @@ namespace GatheringAPI.Models
         Monthly,
         Yearly,
         Once
-    }
-
-    public enum DayOfWeek
-    {
-        Sunday,
-        Monday,
-        Tuesday,
-        Wednesday,
-        Thursday,
-        Friday,
-        Saturday
     }
 
     public enum MonthOfYear

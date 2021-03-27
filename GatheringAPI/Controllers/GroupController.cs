@@ -156,7 +156,7 @@ namespace GatheringAPI.Controllers
 
         //POST: api/Group/5/Event
         [HttpPost("{groupId}/Event")]
-        public async Task<ActionResult<Event>> AddEventToGroup(Event @event, long groupId)
+        public async Task<ActionResult<Event>> AddEventToGroup(EventRepeat @event, long groupId)
         {
             GroupUser currentUser = await guRepo.GetGroupUser(groupId, UserId);
             GroupDto currentGroup = await GetGroup(groupId);

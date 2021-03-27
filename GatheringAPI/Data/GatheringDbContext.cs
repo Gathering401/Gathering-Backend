@@ -17,11 +17,6 @@ namespace GatheringAPI.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<Group>()
-                .HasData(
-                    new Group { GroupId = 1, GroupName = "Odysseus", Description = "HI", Location = "Remote" }
-                );
-
             modelBuilder.Entity<GroupEvent>()
                 .HasKey(groupEvent => new
                 {
@@ -61,6 +56,7 @@ namespace GatheringAPI.Data
         }
         public DbSet<Group> Groups { get; set; }
 
+        public DbSet<EventRepeat> EventRepeats { get; set; }
         public DbSet<Event> Events { get; set; }
         public DbSet<GroupEvent> GroupEvents { get; set; }
 

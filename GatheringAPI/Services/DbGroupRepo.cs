@@ -110,7 +110,6 @@ namespace GatheringAPI.Services
                             EventName = ge.Event.EventName,
                             Start = ge.Event.Start,
                             End = ge.Event.End,
-                            DayOfMonth = ge.Event.DayOfMonth,
                             Cost = ge.Event.Cost,
                             Location = ge.Event.Location
                         })
@@ -388,7 +387,36 @@ namespace GatheringAPI.Services
             _context.SaveChanges();
         }
 
-        public async Task CreateEventAsync(Event @event, long userId, long groupId)
+        public async Task CreateEventAsync(EventRepeat @event, long userId, long groupId)
+        {
+            DateTime repeatDate = @event.Event.Start;
+            switch(@event.ERepeat)
+            {
+                case Repeat.Weekly:
+                    DateTime endDate = repeatDate.AddYears(1);
+                    while(repeatDate < endDate)
+                    {
+                        var IndividualEvent = new Event()
+                        {
+                            EventName = @event.Event.EventName,
+                            Start = repeatDate,
+                            Food = @event.Event.Food,
+                            Cost = @event.Event.Cost,
+                            Location = @event.Event.Location,
+                            Description = @event.Event.Description
+                        };
+                        await CreateIndividualEventAsync(IndividualEvent, userId, groupId);
+                        repeatDate = repeatDate.AddDays(7);
+                    }
+                    break;
+
+                default:
+                    Console.WriteLine("Something went wrong.");
+                    break;
+            }
+        }
+
+        public async Task CreateIndividualEventAsync(Event @event, long userId, long groupId)
         {
             @event.EventHost = new HostedEvent
             {
@@ -399,7 +427,7 @@ namespace GatheringAPI.Services
             _context.Events.Add(@event);
             await _context.SaveChangesAsync();
             await AddEventAsync(groupId, @event.EventId);
-            SendInvites(@event);
+            // SendInvites(@event);
         }
 
         public async Task<long> FindUserIdByUserName(string userName)
@@ -499,7 +527,8 @@ namespace GatheringAPI.Services
         Task<bool> RemoveUserAsync(GroupUser current, GroupUser adjusted);
 
         void SendInvites(Event @event);
-        Task CreateEventAsync(Event @event, long userId, long groupId);
+        Task CreateEventAsync(EventRepeat @event, long userId, long groupId);
+        Task CreateIndividualEventAsync(Event @event, long userId, long groupId);
         Task<long> FindUserIdByUserName(string userName);
 
         bool HostMatchesCurrent(long current, Event @event);
