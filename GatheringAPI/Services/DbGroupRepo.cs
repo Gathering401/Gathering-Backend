@@ -30,6 +30,7 @@ namespace GatheringAPI.Services
         {
             group.GroupUsers = new List<GroupUser>();
             group.GroupUsers.Add(new GroupUser { UserId = userId, Role = Role.owner });
+            group.GroupRepeatedEvents = new List<GroupRepeatedEvent>();
             group.IsPublic = false;
 
             switch (group.GroupSize)
@@ -212,7 +213,6 @@ namespace GatheringAPI.Services
 
         public async Task AddEventAsync(long groupId, long eventId)
         {
-
             var groupEvent = new GroupEvent
             {
                 EventId = eventId,
@@ -390,11 +390,11 @@ namespace GatheringAPI.Services
         public async Task CreateEventAsync(EventRepeat @event, long userId, long groupId)
         {
             DateTime repeatDate = @event.Event.Start;
-            switch(@event.ERepeat)
+            switch (@event.ERepeat)
             {
                 case Repeat.Weekly:
                     DateTime endDate = repeatDate.AddYears(1);
-                    while(repeatDate < endDate)
+                    while (repeatDate < endDate)
                     {
                         var IndividualEvent = new Event()
                         {
@@ -414,6 +414,17 @@ namespace GatheringAPI.Services
                     Console.WriteLine("Something went wrong.");
                     break;
             }
+            _context.EventRepeats.Add(@event);
+            await _context.SaveChangesAsync();
+            
+            var groupRepeatedEvent = new GroupRepeatedEvent
+            {
+                EventRepeatId = @event.EventRepeatId,
+                GroupId = groupId
+            };
+
+            _context.GroupRepeatedEvents.Add(groupRepeatedEvent);
+            await _context.SaveChangesAsync();
         }
 
         public async Task CreateIndividualEventAsync(Event @event, long userId, long groupId)
@@ -427,7 +438,6 @@ namespace GatheringAPI.Services
             _context.Events.Add(@event);
             await _context.SaveChangesAsync();
             await AddEventAsync(groupId, @event.EventId);
-            // SendInvites(@event);
         }
 
         public async Task<long> FindUserIdByUserName(string userName)

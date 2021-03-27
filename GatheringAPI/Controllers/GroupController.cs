@@ -163,7 +163,7 @@ namespace GatheringAPI.Controllers
             
             if(currentUser.Role != Role.user)
             {
-                if(currentGroup.GroupEvents.Count < currentGroup.MaxEvents || currentGroup.MaxEvents == -1)
+                if(currentGroup.GroupRepeatedEvents == null || currentGroup.GroupRepeatedEvents.Count < currentGroup.MaxEvents || currentGroup.MaxEvents == -1)
                 {
                     await repository.CreateEventAsync(@event, UserId, groupId);
                     return Ok();
