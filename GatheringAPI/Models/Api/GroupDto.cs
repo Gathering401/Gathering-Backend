@@ -16,7 +16,7 @@ namespace GatheringAPI.Models.Api
 
         public List<GroupEventDto> GroupEvents { get; set; }
 
-        public List<GroupRepeatedEvent> GroupRepeatedEvents { get; set; }
+        public List<RepeatedEventDto> GroupRepeatedEvents { get; set; }
 
         public List<GroupUserDto> GroupUsers { get; set; }
 
@@ -32,17 +32,14 @@ namespace GatheringAPI.Models.Api
         public long EventId { get; set; }
         public string EventName { get; set; }
 
-        //[Required]
         public DateTime Start { get; set; }
 
         public DateTime? End { get; set; }
 
         public int DayOfMonth { get; set; }
 
-        //[Required]
         public decimal Cost { get; set; }
 
-        //[Required]
         public string Location { get; set; }
     }
 }
