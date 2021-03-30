@@ -8,6 +8,8 @@ namespace GatheringAPI.Models.Api
 {
     public class RepeatedEventDto
     {
+        public long EventId { get; set; }
+
         public Repeat ERepeat { get; set; }
 
         public string RepeatString { get; set; }
