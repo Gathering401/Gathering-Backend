@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace GatheringAPI.Models
@@ -7,12 +8,16 @@ namespace GatheringAPI.Models
     {
         public long EventRepeatId { get; set; }
 
+        public string EventName { get; set; }
+
+        public string Location { get; set; }
+
+        public string Description { get; set; }
+
+        public List<RepeatedEvent> IndividualEvents { get; set; }
+
         [Required]
         public Repeat ERepeat { get; set; }
-
-        public long EventId { get; set; }
-
-        public Event Event { get; set; }
 
         public DayOfWeek DayOfWeek { get; set; }
 

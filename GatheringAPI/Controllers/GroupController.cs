@@ -95,7 +95,7 @@ namespace GatheringAPI.Controllers
         {
             Event @event = await eventRepo.GetOneByIdAsync(eventId);
 
-            await repository.AddEventAsync(groupId, eventId);
+            await repository.AddEventAsync(groupId, @event);
             repository.SendInvites(@event);
 
 
@@ -116,9 +116,9 @@ namespace GatheringAPI.Controllers
 
         // PUT: api/Group/5/Event/3
         [HttpPut("{groupId}/Event/{eventId}")]
-        public async Task<ActionResult> UpdateEvent(long groupId, Event @event)
+        public async Task<ActionResult> UpdateIndividualEvent(long groupId, Event @event)
         {
-            bool didUpdate = await repository.UpdateEventAsync(groupId, @event, UserId);
+            bool didUpdate = await repository.UpdateIndividualEventAsync(groupId, @event, UserId);
 
             if (didUpdate == true)
                 return Ok();
@@ -156,7 +156,7 @@ namespace GatheringAPI.Controllers
 
         //POST: api/Group/5/Event
         [HttpPost("{groupId}/Event")]
-        public async Task<ActionResult<Event>> AddEventToGroup(EventRepeat @event, long groupId)
+        public async Task<ActionResult<Event>> AddEventToGroup(RepeatedEvent repeatEvent, long groupId)
         {
             GroupUser currentUser = await guRepo.GetGroupUser(groupId, UserId);
             GroupDto currentGroup = await GetGroup(groupId);
@@ -165,7 +165,7 @@ namespace GatheringAPI.Controllers
             {
                 if(currentGroup.GroupRepeatedEvents == null || currentGroup.GroupRepeatedEvents.Count < currentGroup.MaxEvents || currentGroup.MaxEvents == -1)
                 {
-                    await repository.CreateEventAsync(@event, UserId, groupId);
+                    await repository.CreateEventAsync(repeatEvent, UserId, groupId);
                     return Ok();
                 }
                 else

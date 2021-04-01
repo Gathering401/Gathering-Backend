@@ -108,7 +108,7 @@ namespace GatheringAPI.Services
                     GroupRepeatedEvents = group.GroupRepeatedEvents
                         .Select(gre => new RepeatedEventDto
                         {
-                            EventName = gre.EventRepeat.Event.EventName,
+                            EventName = gre.EventRepeat.EventName,
                             EventId = gre.EventRepeat.EventRepeatId,
                             ERepeat = gre.EventRepeat.ERepeat,
                             RepeatString = gre.EventRepeat.ERepeat.ToString(),
@@ -215,11 +215,11 @@ namespace GatheringAPI.Services
             return _context.Groups.Any(g => g.GroupId == id);
         }
 
-        public async Task AddEventAsync(long groupId, long eventId)
+        public async Task AddEventAsync(long groupId, Event @event)
         {
             var groupEvent = new GroupEvent
             {
-                EventId = eventId,
+                EventId = @event.EventId,
                 GroupId = groupId
             };
 
@@ -247,15 +247,32 @@ namespace GatheringAPI.Services
             return true;
         }
 
-        public async Task<bool> UpdateEventAsync(long groupId, Event @event, long UserId)
+        public async Task<bool> UpdateRepeatedEventAsync(long groupId, EventRepeat @event, long userId)
+        {
+            List<EventRepeat> eventRepeats = await _context.GroupRepeatedEvents
+                .Select(gre => gre.EventRepeat)
+                .ToListAsync();
+
+            foreach(var repeat in eventRepeats)
+            {
+                foreach(var IndividualEvent in repeat.IndividualEvents)
+                {
+                    bool result = await UpdateIndividualEventAsync(groupId, IndividualEvent.Event, userId);
+                    if (!result) return false;
+                }
+            }
+            return true;
+        }
+
+        public async Task<bool> UpdateIndividualEventAsync(long groupId, Event @event, long userId)
         {
             @event = await _context.Events
                 .Include(e => e.EventHost)
                 .FirstOrDefaultAsync(e => e.EventId == @event.EventId);
 
-            if (HostMatchesCurrent(UserId, @event) == false)
+            if (HostMatchesCurrent(userId, @event) == false)
             {
-                GroupUser currentUser = await guRepo.GetGroupUser(groupId, UserId);
+                GroupUser currentUser = await guRepo.GetGroupUser(groupId, userId);
                 if (currentUser.Role == Role.user || currentUser.Role == Role.creator)
                     return false;
             }
@@ -391,59 +408,82 @@ namespace GatheringAPI.Services
             _context.SaveChanges();
         }
 
-        public async Task CreateEventAsync(EventRepeat @event, long userId, long groupId)
+        public async Task CreateEventAsync(RepeatedEvent @event, long userId, long groupId)
         {
             DateTime repeatDate = @event.Event.Start;
             DateTime endDate;
-            @event.FirstEventDate = repeatDate;
+            @event.EventRepeat.FirstEventDate = repeatDate;
 
-            var IndividualEvent = new Event()
-            {
-                EventName = @event.Event.EventName,
-                Food = @event.Event.Food,
-                Cost = @event.Event.Cost,
-                Location = @event.Event.Location,
-                Description = @event.Event.Description
-            };
-
-            switch (@event.ERepeat)
+            switch (@event.EventRepeat.ERepeat)
             {
                 case Repeat.Weekly:
                     endDate = repeatDate.AddYears(3);
                     while (repeatDate < endDate)
                     {
-                        IndividualEvent.Start = repeatDate;
-                        await CreateIndividualEventAsync(IndividualEvent, userId, groupId);
+                        var weeklyEvent = new Event()
+                        {
+                            EventName = @event.Event.EventName,
+                            Start = repeatDate,
+                            Food = @event.Event.Food,
+                            Cost = @event.Event.Cost,
+                            Location = @event.Event.Location,
+                            Description = @event.Event.Description
+                        };
+                        await CreateIndividualEventAsync(weeklyEvent, userId, groupId);
                         repeatDate = repeatDate.AddDays(7);
-                        @event.DayOfWeek = repeatDate.DayOfWeek;
                     }
+                    @event.EventRepeat.DayOfWeek = repeatDate.DayOfWeek;
                     break;
 
                 case Repeat.Monthly:
                     endDate = repeatDate.AddYears(5);
                     while (repeatDate < endDate)
                     {
-                        IndividualEvent.Start = repeatDate;
-                        await CreateIndividualEventAsync(IndividualEvent, userId, groupId);
+                        var monthlyEvent = new Event()
+                        {
+                            EventName = @event.Event.EventName,
+                            Start = repeatDate,
+                            Food = @event.Event.Food,
+                            Cost = @event.Event.Cost,
+                            Location = @event.Event.Location,
+                            Description = @event.Event.Description
+                        };
+                        await CreateIndividualEventAsync(monthlyEvent, userId, groupId);
                         repeatDate = repeatDate.AddMonths(1);
-                        @event.DayOfMonth = repeatDate.Day;
                     }
+                    @event.EventRepeat.DayOfMonth = repeatDate.Day;
                     break;
 
                 case Repeat.Yearly:
                     endDate = repeatDate.AddYears(100);
                     while (repeatDate < endDate)
                     {
-                        IndividualEvent.Start = repeatDate;
-                        await CreateIndividualEventAsync(IndividualEvent, userId, groupId);
+                        var annualEvent = new Event()
+                        {
+                            EventName = @event.Event.EventName,
+                            Start = repeatDate,
+                            Food = @event.Event.Food,
+                            Cost = @event.Event.Cost,
+                            Location = @event.Event.Location,
+                            Description = @event.Event.Description
+                        };
+                        await CreateIndividualEventAsync(annualEvent, userId, groupId);
                         repeatDate = repeatDate.AddYears(1);
-                        @event.DayOfMonth = repeatDate.Day;
-                        @event.MonthOfYear = (MonthOfYear)repeatDate.Month;
                     }
+                    @event.EventRepeat.DayOfMonth = repeatDate.Day;
+                    @event.EventRepeat.MonthOfYear = (MonthOfYear)repeatDate.Month;
                     break;
 
                 case Repeat.Once:
-                    IndividualEvent.Start = repeatDate;
+                    var IndividualEvent = new Event()
+                    {
+                        EventName = @event.Event.EventName,
+                        Start = repeatDate,
+                        Food = @event.Event.Food,
+                        Cost = @event.Event.Cost,
+                        Location = @event.Event.Location,
+                        Description = @event.Event.Description
+                    };
                     await CreateIndividualEventAsync(IndividualEvent, userId, groupId);
                     break;
 
@@ -452,10 +492,11 @@ namespace GatheringAPI.Services
                     break;
             }
 
-            @event.EndEventDate = repeatDate;
+            @event.EventRepeat.EndEventDate = repeatDate;
             @event.EventId = @event.EventRepeatId;
 
-            _context.EventRepeats.Add(@event);
+            _context.RepeatedEvents.Add(@event);
+            _context.EventRepeats.Add(@event.EventRepeat);
             await _context.SaveChangesAsync();
 
             var groupRepeatedEvent = new GroupRepeatedEvent
@@ -470,15 +511,17 @@ namespace GatheringAPI.Services
 
         public async Task CreateIndividualEventAsync(Event @event, long userId, long groupId)
         {
+            await _context.Events.AddAsync(@event);
+            await _context.SaveChangesAsync();
+
             @event.EventHost = new HostedEvent
             {
                 UserId = userId,
                 EventId = @event.EventId
             };
 
-            _context.Events.Add(@event);
-            await _context.SaveChangesAsync();
-            await AddEventAsync(groupId, @event.EventId);
+            await UpdateIndividualEventAsync(groupId, @event, userId);
+            await AddEventAsync(groupId, @event);
         }
 
         public async Task<long> FindUserIdByUserName(string userName)
@@ -563,14 +606,15 @@ namespace GatheringAPI.Services
 
         GroupDto Find(long id, long userId, GroupUser currentUser);
         Task<Group> GetGroup(long id);
-        Task<bool> UpdateEventAsync(long groupId, Event @event, long UserId);
+        Task<bool> UpdateIndividualEventAsync(long groupId, Event @event, long userId);
+        Task<bool> UpdateRepeatedEventAsync(long groupId, EventRepeat @event, long UserId);
         Task CreateAsync(Group group, long userId);
 
         Task<string> DeleteAsync(long id, long userId);
 
         Task<bool> UpdateAsync(Group group, long userId);
 
-        Task AddEventAsync(long groupId, long eventId);
+        Task AddEventAsync(long groupId, Event @event);
 
         Task<bool> DeleteEventAsync(long groupId, long eventId, long UserId);
         Task AddUserAsync(long groupId, string userName);
@@ -578,7 +622,7 @@ namespace GatheringAPI.Services
         Task<bool> RemoveUserAsync(GroupUser current, GroupUser adjusted);
 
         void SendInvites(Event @event);
-        Task CreateEventAsync(EventRepeat @event, long userId, long groupId);
+        Task CreateEventAsync(RepeatedEvent repeatEvent, long userId, long groupId);
         Task CreateIndividualEventAsync(Event @event, long userId, long groupId);
         Task<long> FindUserIdByUserName(string userName);
 

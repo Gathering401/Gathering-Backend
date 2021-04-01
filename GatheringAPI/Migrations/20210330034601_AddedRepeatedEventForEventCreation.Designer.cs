@@ -4,14 +4,16 @@ using GatheringAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace GatheringAPI.Migrations
 {
     [DbContext(typeof(GatheringDbContext))]
-    partial class GatheringDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210330034601_AddedRepeatedEventForEventCreation")]
+    partial class AddedRepeatedEventForEventCreation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -38,6 +40,9 @@ namespace GatheringAPI.Migrations
                     b.Property<string>("EventName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("EventRepeatId")
+                        .HasColumnType("bigint");
 
                     b.Property<bool>("Food")
                         .HasColumnType("bit");

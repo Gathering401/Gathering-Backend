@@ -59,6 +59,12 @@ namespace GatheringAPI.Data
                     groupRepeatedEvent.GroupId,
                     groupRepeatedEvent.EventRepeatId
                 });
+            modelBuilder.Entity<RepeatedEvent>()
+                .HasKey(repeatedEvent => new
+                {
+                    repeatedEvent.EventRepeatId,
+                    repeatedEvent.EventId
+                });
         }
         public DbSet<Group> Groups { get; set; }
 
@@ -66,6 +72,7 @@ namespace GatheringAPI.Data
         public DbSet<Event> Events { get; set; }
         public DbSet<GroupEvent> GroupEvents { get; set; }
         public DbSet<GroupRepeatedEvent> GroupRepeatedEvents { get; set; }
+        public DbSet<RepeatedEvent> RepeatedEvents { get; set; }
         public DbSet<GroupUser> GroupUsers { get; set; }
         public DbSet<EventInvite> EventInvites { get; set; }
         public DbSet<HostedEvent> HostedEvents { get; set; }
