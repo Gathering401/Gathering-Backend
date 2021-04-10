@@ -277,7 +277,6 @@ namespace GatheringAPI.Services
                     return false;
             }
 
-
             _context.Entry(@event).State = EntityState.Modified;
 
             try
@@ -412,12 +411,26 @@ namespace GatheringAPI.Services
         {
             DateTime repeatDate = @event.Event.Start;
             DateTime endDate;
-            @event.EventRepeat.FirstEventDate = repeatDate;
 
             switch (@event.EventRepeat.ERepeat)
             {
                 case Repeat.Weekly:
                     endDate = repeatDate.AddYears(3);
+
+                    var weeklyEventRepeat = new EventRepeat()
+                    {
+                        EventName = @event.Event.EventName,
+                        ERepeat = @event.EventRepeat.ERepeat,
+                        Location = @event.Event.Location,
+                        Description = @event.Event.Description,
+                        DayOfWeek = @event.Event.Start.DayOfWeek,
+                        FirstEventDate = @event.Event.Start,
+                        EndEventDate = endDate
+                    };
+                    _context.EventRepeats.Add(weeklyEventRepeat);
+                    await _context.SaveChangesAsync();
+                    Console.WriteLine(weeklyEventRepeat.EventRepeatId);
+
                     while (repeatDate < endDate)
                     {
                         var weeklyEvent = new Event()
@@ -429,14 +442,38 @@ namespace GatheringAPI.Services
                             Location = @event.Event.Location,
                             Description = @event.Event.Description
                         };
-                        await CreateIndividualEventAsync(weeklyEvent, userId, groupId);
+
+                        await CreateIndividualEventAsync(weeklyEvent, userId, groupId, weeklyEventRepeat.EventRepeatId);
                         repeatDate = repeatDate.AddDays(7);
                     }
-                    @event.EventRepeat.DayOfWeek = repeatDate.DayOfWeek;
+
+                    var weeklyGroupRepeatedEvent = new GroupRepeatedEvent
+                    {
+                        EventRepeatId = weeklyEventRepeat.EventRepeatId,
+                        GroupId = groupId
+                    };
+
+                    _context.GroupRepeatedEvents.Add(weeklyGroupRepeatedEvent);
+                    await _context.SaveChangesAsync();
+
                     break;
 
                 case Repeat.Monthly:
                     endDate = repeatDate.AddYears(5);
+
+                    var monthlyEventRepeat = new EventRepeat()
+                    {
+                        EventName = @event.Event.EventName,
+                        ERepeat = @event.EventRepeat.ERepeat,
+                        Location = @event.Event.Location,
+                        Description = @event.Event.Description,
+                        DayOfMonth = @event.Event.Start.Day,
+                        FirstEventDate = @event.Event.Start,
+                        EndEventDate = endDate
+                    };
+                    _context.EventRepeats.Add(monthlyEventRepeat);
+                    await _context.SaveChangesAsync();
+
                     while (repeatDate < endDate)
                     {
                         var monthlyEvent = new Event()
@@ -448,14 +485,39 @@ namespace GatheringAPI.Services
                             Location = @event.Event.Location,
                             Description = @event.Event.Description
                         };
-                        await CreateIndividualEventAsync(monthlyEvent, userId, groupId);
+
+                        await CreateIndividualEventAsync(monthlyEvent, userId, groupId, monthlyEventRepeat.EventRepeatId);
                         repeatDate = repeatDate.AddMonths(1);
                     }
-                    @event.EventRepeat.DayOfMonth = repeatDate.Day;
+
+                    var monthlyGroupRepeatedEvent = new GroupRepeatedEvent
+                    {
+                        EventRepeatId = monthlyEventRepeat.EventRepeatId,
+                        GroupId = groupId
+                    };
+
+                    _context.GroupRepeatedEvents.Add(monthlyGroupRepeatedEvent);
+                    await _context.SaveChangesAsync();
+
                     break;
 
                 case Repeat.Yearly:
                     endDate = repeatDate.AddYears(100);
+
+                    var annualEventRepeat = new EventRepeat()
+                    {
+                        EventName = @event.Event.EventName,
+                        ERepeat = @event.EventRepeat.ERepeat,
+                        Location = @event.Event.Location,
+                        Description = @event.Event.Description,
+                        DayOfMonth = @event.Event.Start.Day,
+                        MonthOfYear = (MonthOfYear)@event.Event.Start.Month,
+                        FirstEventDate = @event.Event.Start,
+                        EndEventDate = endDate
+                    };
+                    _context.EventRepeats.Add(annualEventRepeat);
+                    await _context.SaveChangesAsync();
+
                     while (repeatDate < endDate)
                     {
                         var annualEvent = new Event()
@@ -467,14 +529,35 @@ namespace GatheringAPI.Services
                             Location = @event.Event.Location,
                             Description = @event.Event.Description
                         };
-                        await CreateIndividualEventAsync(annualEvent, userId, groupId);
+
+                        await CreateIndividualEventAsync(annualEvent, userId, groupId, annualEventRepeat.EventRepeatId);
                         repeatDate = repeatDate.AddYears(1);
                     }
-                    @event.EventRepeat.DayOfMonth = repeatDate.Day;
-                    @event.EventRepeat.MonthOfYear = (MonthOfYear)repeatDate.Month;
+
+                    var annualGroupRepeatedEvent = new GroupRepeatedEvent
+                    {
+                        EventRepeatId = annualEventRepeat.EventRepeatId,
+                        GroupId = groupId
+                    };
+
+                    _context.GroupRepeatedEvents.Add(annualGroupRepeatedEvent);
+                    await _context.SaveChangesAsync();
+
                     break;
 
                 case Repeat.Once:
+                    var onceEventRepeat = new EventRepeat()
+                    {
+                        EventName = @event.Event.EventName,
+                        ERepeat = @event.EventRepeat.ERepeat,
+                        Location = @event.Event.Location,
+                        Description = @event.Event.Description,
+                        FirstEventDate = @event.Event.Start,
+                        EndEventDate = @event.Event.Start
+                    };
+                    _context.EventRepeats.Add(onceEventRepeat);
+                    await _context.SaveChangesAsync();
+
                     var IndividualEvent = new Event()
                     {
                         EventName = @event.Event.EventName,
@@ -484,34 +567,40 @@ namespace GatheringAPI.Services
                         Location = @event.Event.Location,
                         Description = @event.Event.Description
                     };
-                    await CreateIndividualEventAsync(IndividualEvent, userId, groupId);
+
+                    await CreateIndividualEventAsync(IndividualEvent, userId, groupId, onceEventRepeat.EventRepeatId);
+
+                    var onceGroupRepeatedEvent = new GroupRepeatedEvent
+                    {
+                        EventRepeatId = onceEventRepeat.EventRepeatId,
+                        GroupId = groupId
+                    };
+
+                    _context.GroupRepeatedEvents.Add(onceGroupRepeatedEvent);
+                    await _context.SaveChangesAsync();
+
                     break;
 
                 default:
                     Console.WriteLine("Something went wrong.");
                     break;
             }
-
-            @event.EventRepeat.EndEventDate = repeatDate;
-            @event.EventId = @event.EventRepeatId;
-
-            _context.RepeatedEvents.Add(@event);
-            _context.EventRepeats.Add(@event.EventRepeat);
-            await _context.SaveChangesAsync();
-
-            var groupRepeatedEvent = new GroupRepeatedEvent
-            {
-                EventRepeatId = @event.EventRepeatId,
-                GroupId = groupId
-            };
-
-            _context.GroupRepeatedEvents.Add(groupRepeatedEvent);
-            await _context.SaveChangesAsync();
         }
 
-        public async Task CreateIndividualEventAsync(Event @event, long userId, long groupId)
+        public async Task CreateIndividualEventAsync(Event @event, long userId, long groupId, long repeatId)
         {
+            Console.WriteLine("this is it {0}", repeatId);
             await _context.Events.AddAsync(@event);
+            await _context.SaveChangesAsync();
+
+            var repeatedEvent = new RepeatedEvent()
+            {
+                EventId = @event.EventId,
+                EventRepeatId = repeatId
+            };
+            Console.WriteLine("this is the final event {0}, vs eventRepeat {1}", repeatedEvent.EventId, repeatedEvent.EventRepeatId);
+
+            await _context.RepeatedEvents.AddAsync(repeatedEvent);
             await _context.SaveChangesAsync();
 
             @event.EventHost = new HostedEvent
@@ -623,7 +712,7 @@ namespace GatheringAPI.Services
 
         void SendInvites(Event @event);
         Task CreateEventAsync(RepeatedEvent repeatEvent, long userId, long groupId);
-        Task CreateIndividualEventAsync(Event @event, long userId, long groupId);
+        Task CreateIndividualEventAsync(Event @event, long userId, long groupId, long repeatId);
         Task<long> FindUserIdByUserName(string userName);
 
         bool HostMatchesCurrent(long current, Event @event);
