@@ -114,6 +114,18 @@ namespace GatheringAPI.Controllers
                 return Unauthorized("Error: Only the creator of this event or a group admin can delete it.");
         }
 
+        // PUT: api/Group/5/Repeated/3
+        [HttpPut("{groupId}/Repeated/{eventId}")]
+        public async Task<ActionResult> UpdateRepeatedEvent(long groupId, Event @event)
+        {
+            bool didUpdate = await repository.UpdateRepeatedEventAsync(groupId, @event, UserId);
+
+            if (didUpdate == true)
+                return Ok();
+            else
+                return Unauthorized("Error: Only the creator of this event or a group admin can update it.");
+        }
+
         // PUT: api/Group/5/Event/3
         [HttpPut("{groupId}/Event/{eventId}")]
         public async Task<ActionResult> UpdateIndividualEvent(long groupId, Event @event)
