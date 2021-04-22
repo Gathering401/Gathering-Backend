@@ -114,28 +114,34 @@ namespace GatheringAPI.Controllers
                 return Unauthorized("Error: Only the creator of this event or a group admin can delete it.");
         }
 
-        // PUT: api/Group/5/Repeated/3
-        [HttpPut("{groupId}/Repeated/{eventId}")]
-        public async Task<ActionResult> UpdateRepeatedEvent(long groupId, Event @event)
+        // PUT: api/Group/5/Repeated
+        [HttpPut("{groupId}/Repeated")]
+        public async Task<ActionResult> UpdateRepeatedEvent(long groupId, RepeatedEvent @event)
         {
-            bool didUpdate = await repository.UpdateRepeatedEventAsync(groupId, @event, UserId);
+            if(!repository.HostMatchesCurrent(UserId, @event.Event.EventHost))
+                return Unauthorized("Error: Only the creator of this event or a group admin can update it.");
+            
+            bool didUpdate = await repository.UpdateRepeatedEventAsync(groupId, @event);
 
             if (didUpdate == true)
                 return Ok();
             else
-                return Unauthorized("Error: Only the creator of this event or a group admin can update it.");
+                return BadRequest("Error: Event did not update.");
         }
 
         // PUT: api/Group/5/Event/3
         [HttpPut("{groupId}/Event/{eventId}")]
         public async Task<ActionResult> UpdateIndividualEvent(long groupId, Event @event)
         {
-            bool didUpdate = await repository.UpdateIndividualEventAsync(groupId, @event, UserId);
+            if (!repository.HostMatchesCurrent(UserId, @event.EventHost))
+                return Unauthorized("Error: Only the creator of this event or a group admin can update it.");
+
+            bool didUpdate = await repository.UpdateIndividualEventAsync(groupId, @event);
 
             if (didUpdate == true)
                 return Ok();
             else
-                return Unauthorized("Error: Only the creator of this event or a group admin can update it.");
+                return BadRequest("Error: Event did not update.");
         }
 
         // POST: api/Group/5/User/jonstruve

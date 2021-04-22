@@ -248,40 +248,33 @@ namespace GatheringAPI.Services
             return true;
         }
 
-        public async Task<bool> UpdateRepeatedEventAsync(long groupId, Event @event, long userId)
+        public async Task<bool> UpdateRepeatedEventAsync(long groupId, RepeatedEvent @event)
         {
-            RepeatedEvent repeatedEvent = await _context.RepeatedEvents
-                .Where(re => re.EventId == @event.EventId)
-                .FirstOrDefaultAsync();
-
             List<Event> events = await _context.RepeatedEvents
-                .Where(re => re.EventRepeatId == repeatedEvent.EventRepeatId)
+                .Where(re => re.EventRepeatId == @event.EventRepeatId)
                 .Select(re => re.Event)
                 .ToListAsync();
 
             foreach(var IndividualEvent in events)
             {
-                @event.EventId = IndividualEvent.EventId;
-                bool result = await UpdateIndividualEventAsync(groupId, @event, userId);
+                IndividualEvent.EventName = @event.Event.EventName;
+                IndividualEvent.Food = @event.Event.Food;
+                IndividualEvent.Cost = @event.Event.Cost;
+                IndividualEvent.Description = @event.Event.Description;
+                IndividualEvent.Start = @event.Event.Start;
+                IndividualEvent.Location = @event.Event.Location;
+                IndividualEvent.End = @event.Event.End;
+
+                bool result = await UpdateIndividualEventAsync(groupId, IndividualEvent);
                 if (!result) return false;
             }
+            bool repeatedResult = await UpdateDBRepeatedEventAsync(groupId, @event.EventRepeat);
+            if (!repeatedResult) return false;
             return true;
         }
 
-        public async Task<bool> UpdateIndividualEventAsync(long groupId, Event @event, long userId)
+        public async Task<bool> UpdateIndividualEventAsync(long groupId, Event @event)
         {
-            HostedEvent host = await _context.Events
-                .Where(e => e.EventId == @event.EventId)
-                .Select(e => e.EventHost)
-                .FirstOrDefaultAsync();
-
-            if (HostMatchesCurrent(userId, host) == false)
-            {
-                GroupUser currentUser = await guRepo.GetGroupUser(groupId, userId);
-                if (currentUser.Role == Role.user || currentUser.Role == Role.creator)
-                    return false;
-            }
-
             _context.Entry(@event).State = EntityState.Modified;
 
             try
@@ -302,10 +295,42 @@ namespace GatheringAPI.Services
             return true;
         }
 
+        public async Task<bool> UpdateDBRepeatedEventAsync(long groupId, EventRepeat @event)
+        {
+            _context.Entry(@event).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch
+            {
+                if(!await RepeatedEventExists(groupId, @event))
+                {
+                    return false;
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            return true;
+        }
+
         private async Task<bool> EventExists(long groupId, Event @event)
         {
             var @group = await _context.Groups.FindAsync(groupId);
             if (@group.GroupEvents.Where(ge => ge.EventId == @event.EventId).Count() == 0)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        private async Task<bool> RepeatedEventExists(long groupId, EventRepeat @event)
+        {
+            var @group = await _context.Groups.FindAsync(groupId);
+            if (@group.GroupRepeatedEvents.Where(gre => gre.EventRepeatId == @event.EventRepeatId).Count() == 0)
             {
                 return false;
             }
@@ -614,7 +639,7 @@ namespace GatheringAPI.Services
                 EventId = @event.EventId
             };
 
-            await UpdateIndividualEventAsync(groupId, @event, userId);
+            await UpdateIndividualEventAsync(groupId, @event);
             await AddEventAsync(groupId, @event);
         }
 
@@ -700,8 +725,9 @@ namespace GatheringAPI.Services
 
         GroupDto Find(long id, long userId, GroupUser currentUser);
         Task<Group> GetGroup(long id);
-        Task<bool> UpdateIndividualEventAsync(long groupId, Event @event, long userId);
-        Task<bool> UpdateRepeatedEventAsync(long groupId, Event @event, long UserId);
+        Task<bool> UpdateIndividualEventAsync(long groupId, Event @event);
+        Task<bool> UpdateRepeatedEventAsync(long groupId, RepeatedEvent @event);
+        Task<bool> UpdateDBRepeatedEventAsync(long groupId, EventRepeat @event);
         Task CreateAsync(Group group, long userId);
 
         Task<string> DeleteAsync(long id, long userId);

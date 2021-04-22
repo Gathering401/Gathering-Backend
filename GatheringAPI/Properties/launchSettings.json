@@ -12,18 +12,16 @@
       "commandName": "IISExpress",
       "launchBrowser": true,
       "environmentVariables": {
-        "AWS_REGION": "us-west-2",
-        "AWS_PROFILE": "gathering-aws",
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
     "GatheringAPI": {
       "commandName": "Project",
       "launchBrowser": true,
+      "applicationUrl": "http://localhost:5000",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
-      },
-      "applicationUrl": "http://localhost:5000"
+      }
     }
   }
 }
