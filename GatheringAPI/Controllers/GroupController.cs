@@ -102,23 +102,41 @@ namespace GatheringAPI.Controllers
             return CreatedAtAction(nameof(AddEvent), new { groupId, eventId }, null);
         }
 
+        // DELETE: api/Group/5/Repeated
+        [HttpDelete("{groupId}/Repeated")]
+        public async Task<ActionResult> DeleteRepeatedEvent(long groupId, long eventId)
+        {
+            if (!await repository.HostMatchesCurrentById(groupId, UserId, eventId))
+                return Unauthorized("Error: Only the creator of this event or a group admin can update it.");
+
+            bool didUpdate = await repository.DeleteRepeatedEventAsync(groupId, eventId);
+
+            if (didUpdate == true)
+                return Ok();
+            else
+                return BadRequest("Error: Event did not delete.");
+        }
+
         // DELETE: api/Group/5/Event/3
         [HttpDelete("{groupId}/Event/{eventId}")]
         public async Task<ActionResult> DeleteEvent(long groupId, long eventId)
         {
-            bool didDelete = await repository.DeleteEventAsync(groupId, eventId, UserId);
+            if (!await repository.HostMatchesCurrentById(groupId, UserId, eventId))
+                return Unauthorized("Error: Only the creator of this event or a group admin can delete it.");
 
-            if (didDelete == true)
+            bool didUpdate = await repository.DeleteIndividualEventAsync(groupId, eventId);
+
+            if (didUpdate == true)
                 return Ok();
             else
-                return Unauthorized("Error: Only the creator of this event or a group admin can delete it.");
+                return BadRequest("Error: Event did not update.");
         }
 
         // PUT: api/Group/5/Repeated
         [HttpPut("{groupId}/Repeated")]
         public async Task<ActionResult> UpdateRepeatedEvent(long groupId, RepeatedEvent @event)
         {
-            if(!repository.HostMatchesCurrent(UserId, @event.Event.EventHost))
+            if(!repository.HostMatchesCurrent(groupId, UserId, @event.Event.EventHost))
                 return Unauthorized("Error: Only the creator of this event or a group admin can update it.");
             
             bool didUpdate = await repository.UpdateRepeatedEventAsync(groupId, @event);
@@ -133,7 +151,7 @@ namespace GatheringAPI.Controllers
         [HttpPut("{groupId}/Event/{eventId}")]
         public async Task<ActionResult> UpdateIndividualEvent(long groupId, Event @event)
         {
-            if (!repository.HostMatchesCurrent(UserId, @event.EventHost))
+            if (!repository.HostMatchesCurrent(groupId, UserId, @event.EventHost))
                 return Unauthorized("Error: Only the creator of this event or a group admin can update it.");
 
             bool didUpdate = await repository.UpdateIndividualEventAsync(groupId, @event);

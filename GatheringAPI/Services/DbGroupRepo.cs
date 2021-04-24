@@ -227,21 +227,39 @@ namespace GatheringAPI.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task<bool> DeleteEventAsync(long groupId, long eventId, long UserId)
+        public async Task<bool> DeleteRepeatedEventAsync(long groupId, long eventId)
         {
-            HostedEvent host = await _context.Events
-                .Where(e => e.EventId == eventId)
-                .Select(e => e.EventHost)
+            long eventRepeatId = await _context.RepeatedEvents
+                .Where(re => re.EventId == eventId)
+                .Select(re => re.EventRepeatId)
                 .FirstOrDefaultAsync();
 
-            if (HostMatchesCurrent(UserId, host) == false)
+            List<Event> events = await _context.RepeatedEvents
+                .Where(re => re.EventRepeatId == eventRepeatId)
+                .Select(re => re.Event)
+                .ToListAsync();
+
+            for (var i = 0; i < events.Count; i++)
             {
-                GroupUser currentUser = await guRepo.GetGroupUser(groupId, UserId);
-                if (currentUser.Role == Role.user || currentUser.Role == Role.creator)
-                    return false;
+                await DeleteIndividualEventAsync(groupId, events[i].EventId);
             }
 
+            var groupRepeatedEvent = await _context.GroupRepeatedEvents
+                .FindAsync(groupId, eventRepeatId);
+
+            if (groupRepeatedEvent == null)
+                return false;
+
+            _context.GroupRepeatedEvents.Remove(groupRepeatedEvent);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> DeleteIndividualEventAsync(long groupId, long eventId)
+        {
             var groupEvent = await _context.GroupEvents.FindAsync(groupId, eventId);
+            if (groupEvent == null)
+                return false;
 
             _context.GroupEvents.Remove(groupEvent);
             await _context.SaveChangesAsync();
@@ -649,9 +667,16 @@ namespace GatheringAPI.Services
             return user.Id;
         }
 
-        public bool HostMatchesCurrent(long current, HostedEvent host)
+        public bool HostMatchesCurrent(long groupId, long current, HostedEvent host)
         {
             return current == host.UserId;
+        }
+
+        public async Task<bool> HostMatchesCurrentById(long groupId, long current, long eventId)
+        {
+            var hostedEvent = await _context.HostedEvents.FirstOrDefaultAsync(he => he.EventId == eventId);
+
+            return HostMatchesCurrent(groupId, current, hostedEvent);
         }
 
         public async Task AddUserAsync(long groupId, string username, Role newRole)
@@ -736,7 +761,8 @@ namespace GatheringAPI.Services
 
         Task AddEventAsync(long groupId, Event @event);
 
-        Task<bool> DeleteEventAsync(long groupId, long eventId, long UserId);
+        Task<bool> DeleteRepeatedEventAsync(long groupId, long eventId);
+        Task<bool> DeleteIndividualEventAsync(long groupId, long eventId);
         Task AddUserAsync(long groupId, string userName);
         Task AddUserAsync(long groupId, string username, Role newRole);
         Task<bool> RemoveUserAsync(GroupUser current, GroupUser adjusted);
@@ -746,7 +772,8 @@ namespace GatheringAPI.Services
         Task CreateIndividualEventAsync(Event @event, long userId, long groupId, long repeatId);
         Task<long> FindUserIdByUserName(string userName);
 
-        bool HostMatchesCurrent(long current, HostedEvent host);
+        bool HostMatchesCurrent(long groupId, long current, HostedEvent host);
+        Task<bool> HostMatchesCurrentById(long groupId, long current, long eventId);
         Task<IEnumerable<GroupDto>> SearchGroupsByString(string searchFor);
         Task RequestToJoinGroupById(long groupId, long userId);
         Task RespondToGroupJoinRequest(long groupId, long userId, JoinStatus status);
