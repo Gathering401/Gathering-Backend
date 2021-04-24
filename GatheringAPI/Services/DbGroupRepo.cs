@@ -679,6 +679,11 @@ namespace GatheringAPI.Services
             return HostMatchesCurrent(groupId, current, hostedEvent);
         }
 
+        public async Task<GroupUser> GetGroupUser(long groupId, long userId)
+        {
+            return await _context.GroupUsers.FindAsync(groupId, userId);
+        }
+
         public async Task AddUserAsync(long groupId, string username, Role newRole)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.UserName == username);
@@ -774,6 +779,7 @@ namespace GatheringAPI.Services
 
         bool HostMatchesCurrent(long groupId, long current, HostedEvent host);
         Task<bool> HostMatchesCurrentById(long groupId, long current, long eventId);
+        Task<GroupUser> GetGroupUser(long groupId, long userId);
         Task<IEnumerable<GroupDto>> SearchGroupsByString(string searchFor);
         Task RequestToJoinGroupById(long groupId, long userId);
         Task RespondToGroupJoinRequest(long groupId, long userId, JoinStatus status);

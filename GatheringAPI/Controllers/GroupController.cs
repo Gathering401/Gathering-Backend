@@ -106,8 +106,12 @@ namespace GatheringAPI.Controllers
         [HttpDelete("{groupId}/Repeated")]
         public async Task<ActionResult> DeleteRepeatedEvent(long groupId, long eventId)
         {
-            if (!await repository.HostMatchesCurrentById(groupId, UserId, eventId))
-                return Unauthorized("Error: Only the creator of this event or a group admin can update it.");
+            GroupUser groupUser = await repository.GetGroupUser(groupId, UserId);
+            if (groupUser.Role == Role.user || groupUser.Role == Role.creator)
+            {
+                if (!await repository.HostMatchesCurrentById(groupId, UserId, eventId))
+                    return Unauthorized("Error: Only the creator of this event or a group admin can delete it.");
+            }
 
             bool didUpdate = await repository.DeleteRepeatedEventAsync(groupId, eventId);
 
@@ -121,8 +125,12 @@ namespace GatheringAPI.Controllers
         [HttpDelete("{groupId}/Event/{eventId}")]
         public async Task<ActionResult> DeleteEvent(long groupId, long eventId)
         {
-            if (!await repository.HostMatchesCurrentById(groupId, UserId, eventId))
-                return Unauthorized("Error: Only the creator of this event or a group admin can delete it.");
+            GroupUser groupUser = await repository.GetGroupUser(groupId, UserId);
+            if (groupUser.Role == Role.user || groupUser.Role == Role.creator)
+            {
+                if (!await repository.HostMatchesCurrentById(groupId, UserId, eventId))
+                    return Unauthorized("Error: Only the creator of this event or a group admin can delete it.");
+            }
 
             bool didUpdate = await repository.DeleteIndividualEventAsync(groupId, eventId);
 
@@ -136,8 +144,12 @@ namespace GatheringAPI.Controllers
         [HttpPut("{groupId}/Repeated")]
         public async Task<ActionResult> UpdateRepeatedEvent(long groupId, RepeatedEvent @event)
         {
-            if(!repository.HostMatchesCurrent(groupId, UserId, @event.Event.EventHost))
-                return Unauthorized("Error: Only the creator of this event or a group admin can update it.");
+            GroupUser groupUser = await repository.GetGroupUser(groupId, UserId);
+            if(groupUser.Role == Role.user || groupUser.Role == Role.creator)
+            {
+                if(!repository.HostMatchesCurrent(groupId, UserId, @event.Event.EventHost))
+                    return Unauthorized("Error: Only the creator of this event or a group admin can update it.");
+            }
             
             bool didUpdate = await repository.UpdateRepeatedEventAsync(groupId, @event);
 
@@ -151,8 +163,12 @@ namespace GatheringAPI.Controllers
         [HttpPut("{groupId}/Event/{eventId}")]
         public async Task<ActionResult> UpdateIndividualEvent(long groupId, Event @event)
         {
-            if (!repository.HostMatchesCurrent(groupId, UserId, @event.EventHost))
-                return Unauthorized("Error: Only the creator of this event or a group admin can update it.");
+            GroupUser groupUser = await repository.GetGroupUser(groupId, UserId);
+            if (groupUser.Role == Role.user || groupUser.Role == Role.creator)
+            {
+                if (!repository.HostMatchesCurrent(groupId, UserId, @event.EventHost))
+                    return Unauthorized("Error: Only the creator of this event or a group admin can update it.");
+            }
 
             bool didUpdate = await repository.UpdateIndividualEventAsync(groupId, @event);
 
