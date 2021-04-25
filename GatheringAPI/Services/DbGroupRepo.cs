@@ -279,9 +279,7 @@ namespace GatheringAPI.Services
                 IndividualEvent.Food = @event.Event.Food;
                 IndividualEvent.Cost = @event.Event.Cost;
                 IndividualEvent.Description = @event.Event.Description;
-                IndividualEvent.Start = @event.Event.Start;
                 IndividualEvent.Location = @event.Event.Location;
-                IndividualEvent.End = @event.Event.End;
 
                 bool result = await UpdateIndividualEventAsync(groupId, IndividualEvent);
                 if (!result) return false;
