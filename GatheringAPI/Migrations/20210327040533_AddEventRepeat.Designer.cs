@@ -4,14 +4,16 @@ using GatheringAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace GatheringAPI.Migrations
 {
     [DbContext(typeof(GatheringDbContext))]
-    partial class GatheringDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210327040533_AddEventRepeat")]
+    partial class AddEventRepeat
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -103,28 +105,24 @@ namespace GatheringAPI.Migrations
                     b.Property<int>("DayOfWeek")
                         .HasColumnType("int");
 
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("ERepeat")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("EndEventDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("EventName")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<long>("EventId")
+                        .HasColumnType("bigint");
 
                     b.Property<DateTime>("FirstEventDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("Location")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("MonthOfYear")
                         .HasColumnType("int");
 
                     b.HasKey("EventRepeatId");
+
+                    b.HasIndex("EventId");
 
                     b.ToTable("EventRepeats");
                 });
@@ -176,21 +174,6 @@ namespace GatheringAPI.Migrations
                     b.HasIndex("EventId");
 
                     b.ToTable("GroupEvents");
-                });
-
-            modelBuilder.Entity("GatheringAPI.Models.GroupRepeatedEvent", b =>
-                {
-                    b.Property<long>("GroupId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("EventRepeatId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("GroupId", "EventRepeatId");
-
-                    b.HasIndex("EventRepeatId");
-
-                    b.ToTable("GroupRepeatedEvents");
                 });
 
             modelBuilder.Entity("GatheringAPI.Models.GroupUser", b =>
@@ -245,21 +228,6 @@ namespace GatheringAPI.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("JoinRequests");
-                });
-
-            modelBuilder.Entity("GatheringAPI.Models.RepeatedEvent", b =>
-                {
-                    b.Property<long>("EventRepeatId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("EventId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("EventRepeatId", "EventId");
-
-                    b.HasIndex("EventId");
-
-                    b.ToTable("RepeatedEvents");
                 });
 
             modelBuilder.Entity("GatheringAPI.Models.User", b =>
@@ -500,6 +468,15 @@ namespace GatheringAPI.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("GatheringAPI.Models.EventRepeat", b =>
+                {
+                    b.HasOne("GatheringAPI.Models.Event", "Event")
+                        .WithMany()
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("GatheringAPI.Models.GroupEvent", b =>
                 {
                     b.HasOne("GatheringAPI.Models.Event", "Event")
@@ -510,21 +487,6 @@ namespace GatheringAPI.Migrations
 
                     b.HasOne("GatheringAPI.Models.Group", "Group")
                         .WithMany("GroupEvents")
-                        .HasForeignKey("GroupId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("GatheringAPI.Models.GroupRepeatedEvent", b =>
-                {
-                    b.HasOne("GatheringAPI.Models.EventRepeat", "EventRepeat")
-                        .WithMany()
-                        .HasForeignKey("EventRepeatId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("GatheringAPI.Models.Group", "Group")
-                        .WithMany("GroupRepeatedEvents")
                         .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -571,21 +533,6 @@ namespace GatheringAPI.Migrations
                     b.HasOne("GatheringAPI.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("GatheringAPI.Models.RepeatedEvent", b =>
-                {
-                    b.HasOne("GatheringAPI.Models.Event", "Event")
-                        .WithMany()
-                        .HasForeignKey("EventId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("GatheringAPI.Models.EventRepeat", "EventRepeat")
-                        .WithMany("IndividualEvents")
-                        .HasForeignKey("EventRepeatId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

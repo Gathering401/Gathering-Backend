@@ -58,7 +58,6 @@ namespace GatheringAPI.Services
                     End = e.End,
                     Cost = e.Cost,
                     Location = e.Location,
-                    DayOfMonth = e.DayOfMonth,
                     Attending = e.Attending
                         .Select(a => new AttendingDto
                         {
