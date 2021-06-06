@@ -37,24 +37,24 @@ namespace GatheringAPI.Services
             {
                 case GroupSizes.free:
                     group.MaxUsers = 20;
-                    group.MaxEvents = 300;
+                    group.MaxEvents = 100;
                     group.IsPublic = true;
                     break;
                 case GroupSizes.extraSmall:
                     group.MaxUsers = 50;
-                    group.MaxEvents = 750;
+                    group.MaxEvents = 300;
                     break;
                 case GroupSizes.small:
                     group.MaxUsers = 100;
-                    group.MaxEvents = 1500;
+                    group.MaxEvents = 500;
                     break;
                 case GroupSizes.medium:
                     group.MaxUsers = 250;
-                    group.MaxEvents = 3750;
+                    group.MaxEvents = 1000;
                     break;
                 case GroupSizes.large:
                     group.MaxUsers = 1000;
-                    group.MaxEvents = 15000;
+                    group.MaxEvents = 2500;
                     break;
                 case GroupSizes.infinite:
                     group.MaxUsers = -1;
