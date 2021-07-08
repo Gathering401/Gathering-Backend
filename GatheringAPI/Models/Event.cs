@@ -36,5 +36,7 @@ namespace GatheringAPI.Models
         public HostedEvent EventHost { get; set; }
 
         public List<EventComment> Comments { get; set; }
+
+        public Repeat ERepeat { get; set; }
     }
 }

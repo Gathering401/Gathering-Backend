@@ -146,6 +146,20 @@ namespace GatheringAPI.Services
                 .FirstOrDefault();
         }
 
+        private IEnumerable<GroupEventDto> FindAllGroupEvents(long id, long userId, GroupUser currentUser)
+        {
+            IQueryable<Group> userGroups = UserGroups(userId);
+            return userGroups
+                .Where(g => g.GroupId == id)
+                .Select(g => g.GroupEvents
+                    .Select(ge => new GroupEventDto()
+                    {
+                        ERepeat = ge.Event.ERepeat,
+                        EventName = ge.Event.EventName,
+                        Start = ge.Event.Start
+                    })).FirstOrDefault();
+        }
+
         public async Task<Group> GetGroup(long id)
         {
             return await _context.Groups.FindAsync(id);
@@ -745,6 +759,56 @@ namespace GatheringAPI.Services
             _context.JoinRequests.Remove(joinRequest);
             await _context.SaveChangesAsync();
         }
+
+        public async Task<IEnumerable<GroupEventDto>> GetAllCalendar(Repeat? repeat, long groupId, long userId)
+        {
+            List<GroupEventDto> events = new List<GroupEventDto>();
+
+            if (groupId == -1)
+            {
+                IEnumerable<long> groups = GetGroupIds(userId);
+
+                foreach (long id in groups)
+                {
+                    GroupUser groupUser = await guRepo.GetGroupUser(id, userId);
+                    List<GroupEventDto> groupEvents = FindAllGroupEvents(id, userId, groupUser).ToList();
+                    if (repeat != null)
+                    {
+                        events.AddRange(
+                            groupEvents.Where(ge => ge.ERepeat == repeat)
+                        );
+                    }
+                    else
+                    {
+                        events.AddRange(groupEvents);
+                    }
+                }
+            }
+            else
+            {
+                GroupUser groupUser = await guRepo.GetGroupUser(groupId, userId);
+                List<GroupEventDto> groupEvents = FindAllGroupEvents(groupId, userId, groupUser).ToList();
+                if (repeat != null)
+                {
+                    events.AddRange(
+                        groupEvents.Where(ge => ge.ERepeat == repeat)
+                    );
+                }
+                else
+                {
+                    events.AddRange(groupEvents);
+                }
+            }
+
+            return events;
+        }
+
+        private IQueryable<long> GetGroupIds(long userId)
+        {
+            return _context.Groups
+                .Where(g => g.GroupUsers.Any(u => u.UserId == userId))
+                .Select(g => g.GroupId);
+        }
     }
 
     public interface IGroup
@@ -781,6 +845,6 @@ namespace GatheringAPI.Services
         Task<IEnumerable<GroupDto>> SearchGroupsByString(string searchFor);
         Task RequestToJoinGroupById(long groupId, long userId);
         Task RespondToGroupJoinRequest(long groupId, long userId, JoinStatus status);
+        Task<IEnumerable<GroupEventDto>> GetAllCalendar(Repeat? repeat, long groupId, long userId);
     }
-
 }

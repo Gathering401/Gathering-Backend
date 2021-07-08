@@ -16,7 +16,6 @@ namespace GatheringAPI.Controllers
     [Authorize]
     public class GroupController : ControllerBase
     {
-        //private readonly GatheringDbContext _context;
         private readonly IGroup repository;
         private readonly IEvent eventRepo;
         private readonly IGroupUser guRepo;

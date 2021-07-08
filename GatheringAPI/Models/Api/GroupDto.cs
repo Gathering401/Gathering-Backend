@@ -32,6 +32,8 @@ namespace GatheringAPI.Models.Api
         public long EventId { get; set; }
         public string EventName { get; set; }
 
+        public Repeat ERepeat { get; set; }
+
         public DateTime Start { get; set; }
 
         public DateTime? End { get; set; }
