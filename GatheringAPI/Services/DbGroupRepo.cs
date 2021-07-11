@@ -287,7 +287,7 @@ namespace GatheringAPI.Services
                 .Select(re => re.Event)
                 .ToListAsync();
 
-            foreach(var IndividualEvent in events)
+            foreach (var IndividualEvent in events)
             {
                 IndividualEvent.EventName = @event.Event.EventName;
                 IndividualEvent.Food = @event.Event.Food;
@@ -335,7 +335,7 @@ namespace GatheringAPI.Services
             }
             catch
             {
-                if(!await RepeatedEventExists(groupId, @event))
+                if (!await RepeatedEventExists(groupId, @event))
                 {
                     return false;
                 }
@@ -500,7 +500,8 @@ namespace GatheringAPI.Services
                             Food = @event.Event.Food,
                             Cost = @event.Event.Cost,
                             Location = @event.Event.Location,
-                            Description = @event.Event.Description
+                            Description = @event.Event.Description,
+                            ERepeat = @event.EventRepeat.ERepeat
                         };
 
                         await CreateIndividualEventAsync(weeklyEvent, userId, groupId, weeklyEventRepeat.EventRepeatId);
@@ -543,7 +544,8 @@ namespace GatheringAPI.Services
                             Food = @event.Event.Food,
                             Cost = @event.Event.Cost,
                             Location = @event.Event.Location,
-                            Description = @event.Event.Description
+                            Description = @event.Event.Description,
+                            ERepeat = @event.EventRepeat.ERepeat
                         };
 
                         await CreateIndividualEventAsync(monthlyEvent, userId, groupId, monthlyEventRepeat.EventRepeatId);
@@ -587,7 +589,8 @@ namespace GatheringAPI.Services
                             Food = @event.Event.Food,
                             Cost = @event.Event.Cost,
                             Location = @event.Event.Location,
-                            Description = @event.Event.Description
+                            Description = @event.Event.Description,
+                            ERepeat = @event.EventRepeat.ERepeat
                         };
 
                         await CreateIndividualEventAsync(annualEvent, userId, groupId, annualEventRepeat.EventRepeatId);
@@ -625,7 +628,8 @@ namespace GatheringAPI.Services
                         Food = @event.Event.Food,
                         Cost = @event.Event.Cost,
                         Location = @event.Event.Location,
-                        Description = @event.Event.Description
+                        Description = @event.Event.Description,
+                        ERepeat = @event.EventRepeat.ERepeat
                     };
 
                     await CreateIndividualEventAsync(IndividualEvent, userId, groupId, onceEventRepeat.EventRepeatId);
@@ -649,7 +653,6 @@ namespace GatheringAPI.Services
 
         public async Task CreateIndividualEventAsync(Event @event, long userId, long groupId, long repeatId)
         {
-            Console.WriteLine("this is it {0}", repeatId);
             await _context.Events.AddAsync(@event);
             await _context.SaveChangesAsync();
 
@@ -658,7 +661,6 @@ namespace GatheringAPI.Services
                 EventId = @event.EventId,
                 EventRepeatId = repeatId
             };
-            Console.WriteLine("this is the final event {0}, vs eventRepeat {1}", repeatedEvent.EventId, repeatedEvent.EventRepeatId);
 
             await _context.RepeatedEvents.AddAsync(repeatedEvent);
             await _context.SaveChangesAsync();
@@ -760,54 +762,65 @@ namespace GatheringAPI.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<GroupEventDto>> GetAllCalendar(Repeat? repeat, long groupId, long userId)
+        public async Task<IEnumerable<GroupEventDto>> GetAllCalendar(Repeat repeat, long groupId, long userId)
         {
             List<GroupEventDto> events = new List<GroupEventDto>();
 
-            if (groupId == -1)
-            {
-                IEnumerable<long> groups = GetGroupIds(userId);
+            GroupUser groupUser = await guRepo.GetGroupUser(groupId, userId);
+            List<GroupEventDto> groupEvents = FindAllGroupEvents(groupId, userId, groupUser).ToList();
+            events.AddRange(
+                groupEvents.Where(ge => ge.ERepeat == repeat)
+            );
 
-                foreach (long id in groups)
-                {
-                    GroupUser groupUser = await guRepo.GetGroupUser(id, userId);
-                    List<GroupEventDto> groupEvents = FindAllGroupEvents(id, userId, groupUser).ToList();
-                    if (repeat != null)
-                    {
-                        events.AddRange(
-                            groupEvents.Where(ge => ge.ERepeat == repeat)
-                        );
-                    }
-                    else
-                    {
-                        events.AddRange(groupEvents);
-                    }
-                }
-            }
-            else
+            return events;
+        }
+
+        public async Task<IEnumerable<GroupEventDto>> GetAllCalendar(Repeat repeat, long userId)
+        {
+            List<GroupEventDto> events = new List<GroupEventDto>();
+
+            IEnumerable<long> groups = await GetGroupIds(userId);
+
+            foreach (long id in groups)
             {
-                GroupUser groupUser = await guRepo.GetGroupUser(groupId, userId);
-                List<GroupEventDto> groupEvents = FindAllGroupEvents(groupId, userId, groupUser).ToList();
-                if (repeat != null)
-                {
-                    events.AddRange(
-                        groupEvents.Where(ge => ge.ERepeat == repeat)
-                    );
-                }
-                else
-                {
-                    events.AddRange(groupEvents);
-                }
+                GroupUser groupUser = await guRepo.GetGroupUser(id, userId);
+                List<GroupEventDto> groupEvents = FindAllGroupEvents(id, userId, groupUser).ToList();
+                events.AddRange(
+                    groupEvents.Where(ge => ge.ERepeat == repeat)
+                );
             }
 
             return events;
         }
 
-        private IQueryable<long> GetGroupIds(long userId)
+        public async Task<IEnumerable<GroupEventDto>> GetAllCalendar(long groupId, long userId)
         {
-            return _context.Groups
+            GroupUser groupUser = await guRepo.GetGroupUser(groupId, userId);
+            return FindAllGroupEvents(groupId, userId, groupUser).ToList();
+        }
+
+        public async Task<IEnumerable<GroupEventDto>> GetAllCalendar(long userId)
+        {
+            List<GroupEventDto> events = new List<GroupEventDto>();
+
+            IEnumerable<long> groups = await GetGroupIds(userId);
+
+            foreach (long id in groups)
+            {
+                GroupUser groupUser = await guRepo.GetGroupUser(id, userId);
+                List<GroupEventDto> groupEvents = FindAllGroupEvents(id, userId, groupUser).ToList();
+                events.AddRange(groupEvents);
+            }
+
+            return events;
+        }
+
+        private async Task<IEnumerable<long>> GetGroupIds(long userId)
+        {
+            return await _context.Groups
                 .Where(g => g.GroupUsers.Any(u => u.UserId == userId))
-                .Select(g => g.GroupId);
+                .Select(g => g.GroupId)
+                .ToListAsync();
         }
     }
 
@@ -845,6 +858,9 @@ namespace GatheringAPI.Services
         Task<IEnumerable<GroupDto>> SearchGroupsByString(string searchFor);
         Task RequestToJoinGroupById(long groupId, long userId);
         Task RespondToGroupJoinRequest(long groupId, long userId, JoinStatus status);
-        Task<IEnumerable<GroupEventDto>> GetAllCalendar(Repeat? repeat, long groupId, long userId);
+        Task<IEnumerable<GroupEventDto>> GetAllCalendar(Repeat repeat, long groupId, long userId);
+        Task<IEnumerable<GroupEventDto>> GetAllCalendar(Repeat repeat, long userId);
+        Task<IEnumerable<GroupEventDto>> GetAllCalendar(long groupId, long userId);
+        Task<IEnumerable<GroupEventDto>> GetAllCalendar(long userId);
     }
 }
