@@ -53,8 +53,14 @@ namespace GatheringAPI.Controllers
         [HttpGet("{groupId}")]
         public async Task<GroupUserDto> GetCurrentUser(long groupId)
         {
-            GroupUserDto currentUser = await repository.GetGroupUserDto(groupId, CurrentUserId);
-            return currentUser;
+            return await repository.GetGroupUserDto(groupId, CurrentUserId);
+        }
+
+        // GET api/GroupUser/1/User/23
+        [HttpGet("{groupId}/User/{userId}")]
+        public async Task<bool> IsUserInGroup(long groupId, long userId)
+        {
+            return await repository.IsUserAddedToGroup(groupId, userId, CurrentUserId);
         }
     }
 }

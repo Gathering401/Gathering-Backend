@@ -53,11 +53,23 @@ namespace GatheringAPI.Services
                 return null;
             }
         }
+        public async Task<bool> IsUserAddedToGroup(long groupId, long userId, long currentUser)
+        {
+            GroupUser current = await GetGroupUser(groupId, currentUser);
+            if(current.Role == Role.owner || current.Role == Role.admin)
+            {
+                GroupUser groupUser = await _context.GroupUsers.FirstAsync(gu => gu.GroupId == groupId && gu.UserId == userId);
+
+                return groupUser != null;
+            }
+            return Unauthorized();
+        }
     }
 
     public interface IGroupUser
     {
         Task<GroupUser> GetGroupUser(long groupId, long userId);
         Task<GroupUserDto> GetGroupUserDto(long groupId, long userId);
+        Task<bool> IsUserAddedToGroup(long groupId, long userId, long currentUser);
     }
 }
