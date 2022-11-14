@@ -28,6 +28,7 @@ namespace GatheringAPI.Services
                 EventId = @event.EventId
             };
 
+            Console.WriteLine(@event.Start);
             _context.Events.Add(@event);
             await _context.SaveChangesAsync();
         }
@@ -92,6 +93,36 @@ namespace GatheringAPI.Services
             return @event;
         }
 
+        public EventDto GetGroupEventById(long eventId, long groupId, long userId)
+        {
+            return _context.GroupEvents
+                .Where(e => e.EventId == eventId && e.GroupId == groupId)
+                .Select(ge => new EventDto
+                {
+                    EventId = ge.EventId,
+                    EventName = ge.Event.EventName,
+                    End = ge.Event.End,
+                    Start = ge.Event.Start,
+                    Comments = ge.Event.Comments
+                        .Select(c => new CommentDto
+                        {
+                            Comment = c.Comment
+                        })
+                        .ToList(),
+                    Attending = ge.Event.Attending
+                        .Select(ei => new AttendingDto
+                        {
+                            Name = $"{ei.User.FirstName} {ei.User.LastName}",
+                            Status = ei.Status.ToString()
+                        })
+                        .ToList(),
+                    Cost = ge.Event.Cost,
+                    HostedBy = $"{ge.Event.EventHost.User.FirstName} {ge.Event.EventHost.User.LastName}",
+                    Location = ge.Event.Location
+                })
+                .FirstOrDefault();
+        }
+
         public async Task<bool> UpdateByIdAsync(Event @event)
         {
             _context.Entry(@event).State = EntityState.Modified;
@@ -129,5 +160,6 @@ namespace GatheringAPI.Services
         Task<Event> DeleteAsync(long id);
         Task<Event> GetOneByIdAsync(long id);
         Task<bool> UpdateByIdAsync(Event @event);
+        EventDto GetGroupEventById(long eventId, long groupId, long userId);
     }
 }

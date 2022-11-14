@@ -226,6 +226,14 @@ namespace GatheringAPI.Controllers
             }
             return Unauthorized("Only certain users in your group can create events. Please talk to the group admins if you think that should be you.");
         }
+
+        //GET: api/Group/5/Event/2
+        [HttpGet("{groupId}/Event/{eventId}")]
+        public async Task<EventDto> GetGroupEvent(long groupId, long eventId)
+        {
+            long userId = UserId;
+            return eventRepo.GetGroupEventById(eventId, groupId, userId);
+        }
         
         //DELETE: api/Group/5/User/2
         [HttpDelete("{groupId}/User/{userId}")]
