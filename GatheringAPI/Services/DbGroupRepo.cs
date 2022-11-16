@@ -146,7 +146,7 @@ namespace GatheringAPI.Services
                 .FirstOrDefault();
         }
 
-        private IEnumerable<GroupEventDto> FindAllGroupEvents(long id, long userId, GroupUser currentUser)
+        private IEnumerable<GroupEventDto> FindAllGroupEvents(long id, long userId)
         {
             IQueryable<Group> userGroups = UserGroups(userId);
             return userGroups
@@ -157,7 +157,10 @@ namespace GatheringAPI.Services
                         EventId = ge.EventId,
                         ERepeat = ge.Event.ERepeat,
                         EventName = ge.Event.EventName,
-                        Start = ge.Event.Start
+                        Start = ge.Event.Start,
+                        Location = ge.Event.Location,
+                        Cost = ge.Event.Cost,
+                        End = ge.Event.End
                     })).FirstOrDefault();
         }
 
@@ -768,7 +771,7 @@ namespace GatheringAPI.Services
             List<GroupEventDto> events = new List<GroupEventDto>();
 
             GroupUser groupUser = await guRepo.GetGroupUser(groupId, userId);
-            List<GroupEventDto> groupEvents = FindAllGroupEvents(groupId, userId, groupUser).ToList();
+            List<GroupEventDto> groupEvents = FindAllGroupEvents(groupId, userId).ToList();
             events.AddRange(
                 groupEvents.Where(ge => ge.ERepeat == repeat)
             );
@@ -784,8 +787,7 @@ namespace GatheringAPI.Services
 
             foreach (long id in groups)
             {
-                GroupUser groupUser = await guRepo.GetGroupUser(id, userId);
-                List<GroupEventDto> groupEvents = FindAllGroupEvents(id, userId, groupUser).ToList();
+                List<GroupEventDto> groupEvents = FindAllGroupEvents(id, userId).ToList();
                 events.AddRange(
                     groupEvents.Where(ge => ge.ERepeat == repeat)
                 );
@@ -797,7 +799,7 @@ namespace GatheringAPI.Services
         public async Task<IEnumerable<GroupEventDto>> GetAllCalendar(long groupId, long userId)
         {
             GroupUser groupUser = await guRepo.GetGroupUser(groupId, userId);
-            return FindAllGroupEvents(groupId, userId, groupUser).ToList();
+            return FindAllGroupEvents(groupId, userId);
         }
 
         public async Task<IEnumerable<GroupEventDto>> GetAllCalendar(long userId)
@@ -809,7 +811,7 @@ namespace GatheringAPI.Services
             foreach (long id in groups)
             {
                 GroupUser groupUser = await guRepo.GetGroupUser(id, userId);
-                List<GroupEventDto> groupEvents = FindAllGroupEvents(id, userId, groupUser).ToList();
+                List<GroupEventDto> groupEvents = FindAllGroupEvents(id, userId).ToList();
                 events.AddRange(groupEvents);
             }
 
