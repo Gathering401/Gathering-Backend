@@ -17,19 +17,21 @@ namespace GatheringAPI.Controllers
     public class CalendarController : ControllerBase
     {
         private readonly IGroup repository;
+        private readonly IEvent eventRepo;
 
-        public CalendarController(IGroup Repository)
+        public CalendarController(IGroup Repository, IEvent EventRepo)
         {
             repository = Repository;
+            eventRepo = EventRepo;
         }
 
         private long UserId => long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
         // GET: api/Calendar
         [HttpGet("Repeat/{repeat?}/Group/{groupId}")]
-        public async Task<IEnumerable<GroupEventDto>> GetByRepeatAndId(Repeat repeat, long groupId)
+        public IEnumerable<GroupEventDto> GetByRepeatAndId(Repeat repeat, long groupId)
         {
-            return await repository.GetAllCalendar(repeat, groupId, UserId);
+            return repository.GetAllCalendar(repeat, groupId, UserId);
         }
 
         [HttpGet("Repeat/{repeat?}")]
@@ -39,15 +41,21 @@ namespace GatheringAPI.Controllers
         }
 
         [HttpGet("Group/{groupId}")]
-        public async Task<IEnumerable<GroupEventDto>> GetById(long groupId)
+        public IEnumerable<GroupEventDto> GetById(long groupId)
         {
-            return await repository.GetAllCalendar(groupId, UserId);
+            return repository.GetAllCalendar(groupId, UserId);
         }
 
         [HttpGet]
         public async Task<IEnumerable<GroupEventDto>> Get()
         {
             return await repository.GetAllCalendar(UserId);
+        }
+
+        [HttpGet("Invitations")]
+        public IEnumerable<EventInviteDto> GetInvitationsByDate()
+        {
+            return eventRepo.GetInvitations(UserId);
         }
     }
 }

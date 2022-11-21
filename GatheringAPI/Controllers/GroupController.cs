@@ -95,7 +95,6 @@ namespace GatheringAPI.Controllers
             Event @event = await eventRepo.GetOneByIdAsync(eventId);
 
             await repository.AddEventAsync(groupId, @event);
-            repository.SendInvites(@event);
 
 
             return CreatedAtAction(nameof(AddEvent), new { groupId, eventId }, null);
@@ -186,7 +185,6 @@ namespace GatheringAPI.Controllers
 
             if (currentUser.Role == Role.owner || currentUser.Role == Role.admin)
             {
-                Console.WriteLine($"{currentGroup.GroupUsers.Count}, {currentGroup.MaxUsers}");
                 if(currentGroup.GroupUsers.Count < currentGroup.MaxUsers || currentGroup.MaxUsers == -1)
                 {
                     await repository.AddUserAsync(groupId, userName);
@@ -229,7 +227,7 @@ namespace GatheringAPI.Controllers
 
         //GET: api/Group/5/Event/2
         [HttpGet("{groupId}/Event/{eventId}")]
-        public async Task<EventDto> GetGroupEvent(long groupId, long eventId)
+        public EventDto GetGroupEvent(long groupId, long eventId)
         {
             long userId = UserId;
             return eventRepo.GetGroupEventById(eventId, groupId, userId);

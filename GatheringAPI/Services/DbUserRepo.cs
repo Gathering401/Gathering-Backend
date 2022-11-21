@@ -39,14 +39,6 @@ namespace GatheringAPI.Services
             return null;
         }
 
-        public async Task<User> GetUserByPhone(string cleanPhone)
-        {
-            return await _context.Users
-                 .Include(u => u.Invites)
-                 .ThenInclude(i => i.Event)
-                 .FirstOrDefaultAsync(u => u.PhoneNumber == cleanPhone);
-        }
-
         public async Task<UserDto> Register(RegisterData data, ModelStateDictionary modelState)
         {
             var user = new User
@@ -107,8 +99,6 @@ namespace GatheringAPI.Services
     public interface IUser
     {
         Task<UserDto> Authenticate(string userName, string password);
-
-        Task<User> GetUserByPhone(string cleanPhone);
 
         Task<UserDto> Register(RegisterData data, ModelStateDictionary modelState);
 

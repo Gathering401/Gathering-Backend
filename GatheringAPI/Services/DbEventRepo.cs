@@ -28,7 +28,6 @@ namespace GatheringAPI.Services
                 EventId = @event.EventId
             };
 
-            Console.WriteLine(@event.Start);
             _context.Events.Add(@event);
             await _context.SaveChangesAsync();
         }
@@ -147,6 +146,22 @@ namespace GatheringAPI.Services
             return true;
         }
 
+        public IEnumerable<EventInviteDto> GetInvitations(long userId)
+        {
+            return _context.EventInvites.Where(ei => ei.UserId == userId && ei.Status == RSVPStatus.Pending)
+                .Select(ei => new EventInviteDto
+                {
+                    EventName = ei.EventRepeat.EventName,
+                    ERepeat = ei.EventRepeat.ERepeat,
+                    Status = ei.Status,
+                    DayOfWeek = ei.EventRepeat.DayOfWeek,
+                    DayOfMonth = ei.EventRepeat.DayOfMonth,
+                    MonthOfYear = ei.EventRepeat.MonthOfYear,
+                    FirstEventDate = ei.EventRepeat.FirstEventDate
+                })
+                .ToList();
+        }
+
         private async Task<bool> EventExists(long id)
         {
             return await _context.Events.AnyAsync(e => e.EventId == id);
@@ -161,5 +176,6 @@ namespace GatheringAPI.Services
         Task<Event> GetOneByIdAsync(long id);
         Task<bool> UpdateByIdAsync(Event @event);
         EventDto GetGroupEventById(long eventId, long groupId, long userId);
+        IEnumerable<EventInviteDto> GetInvitations(long userId);
     }
 }
