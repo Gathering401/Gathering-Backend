@@ -61,7 +61,7 @@ namespace GatheringAPI.Services
                     group.MaxEvents = -1;
                     break;
                 default:
-                    Console.WriteLine("Should not get here.");
+                    // TODO ===== need to throw this eventually
                     break;
             }
 
@@ -405,70 +405,22 @@ namespace GatheringAPI.Services
 
             return false;
         }
-
-        public string _accountSid = null;
-        public string _authToken = null;
-        public string _phone = null;
-
-        public void SendInvites(Event @event)
+        public async Task CreateInvites(EventRepeat eventRepeat, long groupId, long userId)
         {
-            _phone = Configuration["Twilio:phone"];
-            _accountSid = Configuration["Twilio:accountSid"];
-            _authToken = Configuration["Twilio:authToken"];
+            List<GroupUser> groupUsers = await _context.GroupUsers.Where(gu => gu.GroupId == groupId).ToListAsync();
 
-            if (String.IsNullOrEmpty(_phone))
-                throw new NullTwilioPhoneException();
-
-            if (String.IsNullOrEmpty(_accountSid))
-                throw new NullTwilioSidException();
-
-            if (String.IsNullOrEmpty(_authToken))
-                throw new NullTwilioTokenException();
-
-            TwilioClient.Init(_accountSid, _authToken);
-
-            foreach (var group in @event.InvitedGroups)
+            for(int i = 0; i < groupUsers.Count; i++)
             {
-                var currGroup = _context.Groups
-                    .Include(g => g.GroupUsers)
-                    .ThenInclude(gu => gu.User)
-                    .ThenInclude(u => u.Invites)
-                    .FirstOrDefault(g => g.GroupId == group.GroupId);
-
-                foreach (var user in currGroup.GroupUsers)
+                EventInvite eventInvite = new EventInvite
                 {
-                    if (String.IsNullOrEmpty(user.User.PhoneNumber))
-                        continue;
+                    EventRepeatId = eventRepeat.EventRepeatId,
+                    UserId = groupUsers[i].UserId,
+                    Status = groupUsers[i].UserId == userId ? RSVPStatus.Accepted : RSVPStatus.Pending
+                };
 
-                    try
-                    {
-                        MessageResource.Create(
-                         body: $"You've been invited to {@event.EventName}! Please reply with your RSVP - 1 for Yes, 2 for No, 3 for Maybe, 4 to get more Details, 5 for event description, or 6 to ask a question. Your response will apply to your most recent invitation without a response.",
-                          from: new Twilio.Types.PhoneNumber($"+1{_phone}"),
-                          to: new Twilio.Types.PhoneNumber($"+1{user.User.PhoneNumber}")
-                      );
-                    }
-
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine(ex);
-                    }
-
-                    var invitation = new EventInvite
-                    {
-                        Event = @event,
-                        EventId = @event.EventId,
-                        UserId = user.UserId,
-                        Status = RSVPStatus.Pending,
-                        User = user.User
-                    };
-
-                    user.User.Invites.Add(invitation);
-                    _context.Entry(user.User).State = EntityState.Modified;
-
-                }
+                _context.EventInvites.Add(eventInvite);
+                await _context.SaveChangesAsync();
             }
-            _context.SaveChanges();
         }
 
         public async Task CreateEventAsync(RepeatedEvent @event, long userId, long groupId)
@@ -493,7 +445,7 @@ namespace GatheringAPI.Services
                     };
                     _context.EventRepeats.Add(weeklyEventRepeat);
                     await _context.SaveChangesAsync();
-                    Console.WriteLine(weeklyEventRepeat.EventRepeatId);
+                    await CreateInvites(weeklyEventRepeat, groupId, userId);
 
                     while (repeatDate < endDate)
                     {
@@ -538,6 +490,7 @@ namespace GatheringAPI.Services
                     };
                     _context.EventRepeats.Add(monthlyEventRepeat);
                     await _context.SaveChangesAsync();
+                    await CreateInvites(monthlyEventRepeat, groupId, userId);
 
                     while (repeatDate < endDate)
                     {
@@ -583,6 +536,7 @@ namespace GatheringAPI.Services
                     };
                     _context.EventRepeats.Add(annualEventRepeat);
                     await _context.SaveChangesAsync();
+                    await CreateInvites(annualEventRepeat, groupId, userId);
 
                     while (repeatDate < endDate)
                     {
@@ -624,6 +578,7 @@ namespace GatheringAPI.Services
                     };
                     _context.EventRepeats.Add(onceEventRepeat);
                     await _context.SaveChangesAsync();
+                    await CreateInvites(onceEventRepeat, groupId, userId);
 
                     var IndividualEvent = new Event()
                     {
@@ -650,7 +605,7 @@ namespace GatheringAPI.Services
                     break;
 
                 default:
-                    Console.WriteLine("Something went wrong.");
+                    // TODO ===== need to throw this eventually
                     break;
             }
         }
@@ -766,11 +721,10 @@ namespace GatheringAPI.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<GroupEventDto>> GetAllCalendar(Repeat repeat, long groupId, long userId)
+        public IEnumerable<GroupEventDto> GetAllCalendar(Repeat repeat, long groupId, long userId)
         {
             List<GroupEventDto> events = new List<GroupEventDto>();
 
-            GroupUser groupUser = await guRepo.GetGroupUser(groupId, userId);
             List<GroupEventDto> groupEvents = FindAllGroupEvents(groupId, userId).ToList();
             events.AddRange(
                 groupEvents.Where(ge => ge.ERepeat == repeat)
@@ -796,9 +750,8 @@ namespace GatheringAPI.Services
             return events;
         }
 
-        public async Task<IEnumerable<GroupEventDto>> GetAllCalendar(long groupId, long userId)
+        public IEnumerable<GroupEventDto> GetAllCalendar(long groupId, long userId)
         {
-            GroupUser groupUser = await guRepo.GetGroupUser(groupId, userId);
             return FindAllGroupEvents(groupId, userId);
         }
 
@@ -850,7 +803,7 @@ namespace GatheringAPI.Services
         Task AddUserAsync(long groupId, string username, Role newRole);
         Task<bool> RemoveUserAsync(GroupUser current, GroupUser adjusted);
 
-        void SendInvites(Event @event);
+        Task CreateInvites(EventRepeat eventRepeat, long groupId, long userId);
         Task CreateEventAsync(RepeatedEvent repeatEvent, long userId, long groupId);
         Task CreateIndividualEventAsync(Event @event, long userId, long groupId, long repeatId);
         Task<long> FindUserIdByUserName(string userName);
@@ -861,9 +814,9 @@ namespace GatheringAPI.Services
         Task<IEnumerable<GroupDto>> SearchGroupsByString(string searchFor);
         Task RequestToJoinGroupById(long groupId, long userId);
         Task RespondToGroupJoinRequest(long groupId, long userId, JoinStatus status);
-        Task<IEnumerable<GroupEventDto>> GetAllCalendar(Repeat repeat, long groupId, long userId);
+        IEnumerable<GroupEventDto> GetAllCalendar(Repeat repeat, long groupId, long userId);
         Task<IEnumerable<GroupEventDto>> GetAllCalendar(Repeat repeat, long userId);
-        Task<IEnumerable<GroupEventDto>> GetAllCalendar(long groupId, long userId);
+        IEnumerable<GroupEventDto> GetAllCalendar(long groupId, long userId);
         Task<IEnumerable<GroupEventDto>> GetAllCalendar(long userId);
     }
 }

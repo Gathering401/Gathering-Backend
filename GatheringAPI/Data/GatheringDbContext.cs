@@ -27,7 +27,7 @@ namespace GatheringAPI.Data
                 .HasKey(eventInvite => new
                 {
                     eventInvite.UserId,
-                    eventInvite.EventId
+                    eventInvite.EventRepeatId
                 });
             modelBuilder.Entity<GroupUser>()
                 .HasKey(groupUser => new
