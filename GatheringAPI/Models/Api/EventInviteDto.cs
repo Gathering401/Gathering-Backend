@@ -5,6 +5,7 @@ namespace GatheringAPI.Models.Api
     public class EventInviteDto
     {
         public string EventName { get; set; }
+        public long EventRepeatId { get; set; }
         public Repeat ERepeat { get; set; }
         public RSVPStatus Status { get; set; }
         public DayOfWeek DayOfWeek { get; set; }

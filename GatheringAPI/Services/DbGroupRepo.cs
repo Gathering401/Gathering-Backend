@@ -610,6 +610,36 @@ namespace GatheringAPI.Services
             }
         }
 
+        public async Task<bool> RespondToEventInvitation(long userId, long repeatedEventId, RSVPStatus rsvp)
+        {
+            EventInvite eventInvite = await _context.EventInvites.FindAsync(userId, repeatedEventId);
+            eventInvite.Status = rsvp;
+
+            _context.Entry(eventInvite).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch
+            {
+                if (!await EventInviteExists(userId, repeatedEventId, eventInvite))
+                {
+                    return false;
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            return true;
+        }
+
+        private async Task<bool> EventInviteExists(long userId, long repeatedEventId, EventInvite eventInvite)
+        {
+            return await _context.EventInvites.AnyAsync(ei => ei.EventRepeatId == repeatedEventId && ei.UserId == userId);
+        }
+
         public async Task CreateIndividualEventAsync(Event @event, long userId, long groupId, long repeatId)
         {
             await _context.Events.AddAsync(@event);
@@ -805,6 +835,7 @@ namespace GatheringAPI.Services
 
         Task CreateInvites(EventRepeat eventRepeat, long groupId, long userId);
         Task CreateEventAsync(RepeatedEvent repeatEvent, long userId, long groupId);
+        Task<bool> RespondToEventInvitation(long groupId, long repeatedEventId, RSVPStatus rsvp);
         Task CreateIndividualEventAsync(Event @event, long userId, long groupId, long repeatId);
         Task<long> FindUserIdByUserName(string userName);
 
