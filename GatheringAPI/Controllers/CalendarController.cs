@@ -57,5 +57,21 @@ namespace GatheringAPI.Controllers
         {
             return eventRepo.GetInvitations(UserId);
         }
+
+        //PUT: api/Group/5/Event/5/Invitation/1
+        [HttpPut("Event/{repeatedEventId}/Invitation/{rsvp}")]
+        public async Task<IActionResult> UpdateInvitationRSVP(long repeatedEventId, RSVPStatus rsvp)
+        {
+            await repository.RespondToEventInvitation(UserId, repeatedEventId, rsvp);
+
+            bool didUpdate = await repository.RespondToEventInvitation(UserId, repeatedEventId, rsvp);
+
+            if (!didUpdate)
+            {
+                return NotFound();
+            }
+
+            return NoContent();
+        }
     }
 }

@@ -152,6 +152,7 @@ namespace GatheringAPI.Services
                 .Select(ei => new EventInviteDto
                 {
                     EventName = ei.EventRepeat.EventName,
+                    EventRepeatId = ei.EventRepeatId,
                     ERepeat = ei.EventRepeat.ERepeat,
                     Status = ei.Status,
                     DayOfWeek = ei.EventRepeat.DayOfWeek,
