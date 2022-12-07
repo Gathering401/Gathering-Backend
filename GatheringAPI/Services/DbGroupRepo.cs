@@ -33,8 +33,6 @@ namespace GatheringAPI.Services
             group.GroupRepeatedEvents = new List<GroupRepeatedEvent>();
 
             switch (group.GroupSize)
-                // going to change this to 3 sizes - free (50p, 100e, free), large (500p, 2500e, $50), and infinite (infinite, infinite, $500). Just feels more logical, prices subject to change
-                // along with this change, all groups will be made private. requests to join or group invitation only to join groups
             {
                 case GroupSizes.free:
                     group.MaxUsers = 50;
@@ -78,11 +76,21 @@ namespace GatheringAPI.Services
             }
             else
                 return "false";
-
         }
 
         public GroupDto Find(long id, long userId, GroupUser currentUser)
         {
+            UserDto groupOwner = _context.GroupUsers
+                .Where(gu => gu.Role == Role.owner && gu.GroupId == id)
+                .Select(gu => new UserDto
+                {
+                    Username = gu.User.UserName,
+                    FirstName = gu.User.FirstName,
+                    LastName = gu.User.LastName,
+                    Id = gu.User.Id
+                })
+                .FirstOrDefault();
+
             IQueryable<Group> userGroups = UserGroups(userId);
             return userGroups
                 .Where(g => g.GroupId == id)
@@ -129,7 +137,8 @@ namespace GatheringAPI.Services
                         })
                         .ToList(),
                     MaxUsers = group.MaxUsers,
-                    MaxEvents = group.MaxEvents
+                    MaxEvents = group.MaxEvents,
+                    Owner = groupOwner
                 })
                 .FirstOrDefault();
         }
@@ -180,7 +189,16 @@ namespace GatheringAPI.Services
                     GroupId = group.GroupId,
                     GroupName = group.GroupName,
                     Description = group.Description,
-                    Location = group.Location
+                    Location = group.Location,
+                    Owner = _context.GroupUsers.Where(gu => gu.Role == Role.owner && gu.GroupId == group.GroupId)
+                        .Select(gu => new UserDto
+                        {
+                            Username = gu.User.UserName,
+                            FirstName = gu.User.FirstName,
+                            LastName = gu.User.LastName,
+                            Id = gu.User.Id
+                        })
+                        .FirstOrDefault()
                 });
         }
 
