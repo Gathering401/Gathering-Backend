@@ -62,8 +62,6 @@ namespace GatheringAPI.Controllers
         [HttpPut("Event/{repeatedEventId}/Invitation/{rsvp}")]
         public async Task<IActionResult> UpdateInvitationRSVP(long repeatedEventId, RSVPStatus rsvp)
         {
-            await repository.RespondToEventInvitation(UserId, repeatedEventId, rsvp);
-
             bool didUpdate = await repository.RespondToEventInvitation(UserId, repeatedEventId, rsvp);
 
             if (!didUpdate)

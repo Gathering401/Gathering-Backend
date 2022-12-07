@@ -31,29 +31,17 @@ namespace GatheringAPI.Services
             group.GroupUsers = new List<GroupUser>();
             group.GroupUsers.Add(new GroupUser { UserId = userId, Role = Role.owner });
             group.GroupRepeatedEvents = new List<GroupRepeatedEvent>();
-            group.IsPublic = false;
 
             switch (group.GroupSize)
+                // going to change this to 3 sizes - free (50p, 100e, free), large (500p, 2500e, $50), and infinite (infinite, infinite, $500). Just feels more logical, prices subject to change
+                // along with this change, all groups will be made private. requests to join or group invitation only to join groups
             {
                 case GroupSizes.free:
-                    group.MaxUsers = 20;
-                    group.MaxEvents = 100;
-                    group.IsPublic = true;
-                    break;
-                case GroupSizes.extraSmall:
                     group.MaxUsers = 50;
-                    group.MaxEvents = 300;
-                    break;
-                case GroupSizes.small:
-                    group.MaxUsers = 100;
-                    group.MaxEvents = 500;
-                    break;
-                case GroupSizes.medium:
-                    group.MaxUsers = 250;
-                    group.MaxEvents = 1000;
+                    group.MaxEvents = 100;
                     break;
                 case GroupSizes.large:
-                    group.MaxUsers = 1000;
+                    group.MaxUsers = 500;
                     group.MaxEvents = 2500;
                     break;
                 case GroupSizes.infinite:
@@ -612,10 +600,12 @@ namespace GatheringAPI.Services
 
         public async Task<bool> RespondToEventInvitation(long userId, long repeatedEventId, RSVPStatus rsvp)
         {
+            Console.WriteLine("Got this far");
             EventInvite eventInvite = await _context.EventInvites.FindAsync(userId, repeatedEventId);
             eventInvite.Status = rsvp;
 
             _context.Entry(eventInvite).State = EntityState.Modified;
+            Console.WriteLine("Got here sucker");
 
             try
             {
@@ -704,31 +694,14 @@ namespace GatheringAPI.Services
 
         public async Task RequestToJoinGroupById(long groupId, long userId)
         {
-            Group currentGroup = await GetGroup(groupId);
-
-            if (currentGroup.IsPublic == false)
+            JoinRequest joinRequest = new JoinRequest
             {
-                JoinRequest joinRequest = new JoinRequest
-                {
-                    GroupId = groupId,
-                    UserId = userId
-                };
+                GroupId = groupId,
+                UserId = userId
+            };
 
-                _context.JoinRequests.Add(joinRequest);
-                await _context.SaveChangesAsync();
-            }
-            else
-            {
-                var groupUser = new GroupUser
-                {
-                    GroupId = groupId,
-                    UserId = userId,
-                    Role = Role.user
-                };
-
-                _context.GroupUsers.Add(groupUser);
-                await _context.SaveChangesAsync();
-            }
+            _context.JoinRequests.Add(joinRequest);
+            await _context.SaveChangesAsync();
         }
 
         public async Task RespondToGroupJoinRequest(long groupId, long userId, JoinStatus status)

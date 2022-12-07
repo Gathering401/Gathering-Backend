@@ -20,8 +20,6 @@ namespace GatheringAPI.Models
 
         public List<GroupRepeatedEvent> GroupRepeatedEvents { get; set; }
 
-        public bool IsPublic { get; set; } = false;
-
         public List<JoinRequest> RequestsToJoin { get; set; }
 
         [Required]
@@ -34,11 +32,8 @@ namespace GatheringAPI.Models
 
     public enum GroupSizes
     {
-        free = 20,
-        extraSmall = 50,
-        small = 100,
-        medium = 250,
-        large = 1000,
+        free = 50,
+        large = 500,
         infinite = 1001
     }
 }
