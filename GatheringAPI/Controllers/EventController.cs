@@ -1,15 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using GatheringAPI.Data;
 using GatheringAPI.Models;
 using GatheringAPI.Services;
-using Twilio;
-using Twilio.Rest.Api.V2010.Account;
 using Microsoft.Extensions.Configuration;
 using GatheringAPI.Models.Api;
 using System.Security.Claims;
@@ -21,11 +14,13 @@ namespace GatheringAPI.Controllers
     public class EventController : ControllerBase
     {
         private readonly IEvent repository;
+        private readonly IGroup groupRepo;
         public IConfiguration Configuration { get; }
 
-        public EventController(IEvent repository, IConfiguration configuration)
+        public EventController(IEvent repository, IGroup groupRepo, IConfiguration configuration)
         {
             this.repository = repository;
+            this.groupRepo = groupRepo;
             Configuration = configuration;
         }
         private long UserId => long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
@@ -92,6 +87,13 @@ namespace GatheringAPI.Controllers
             }
 
             return @event;
+        }
+
+        // GET: api/Event/Upcoming/30
+        [HttpGet("Upcoming/{daysOut}")]
+        public async Task<IEnumerable<UpcomingEventDto>> getUpcoming(long daysOut)
+        {
+            return await groupRepo.GetUpcomingEvents(daysOut, UserId);
         }
     }
 }

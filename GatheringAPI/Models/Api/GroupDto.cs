@@ -25,6 +25,8 @@ namespace GatheringAPI.Models.Api
         public long MaxUsers { get; set; }
 
         public long MaxEvents { get; set; }
+
+        public UserDto Owner { get; set; }
     }
 
     public class GroupEventDto
