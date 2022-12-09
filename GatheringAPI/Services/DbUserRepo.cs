@@ -34,6 +34,7 @@ namespace GatheringAPI.Services
                     Id = user.Id,
                     Username = user.UserName,
                     Token = await tokenService.GetToken(user, TimeSpan.FromDays(30)),
+                    UpcomingDaysOut = user.UpcomingDaysOut
                 };
             }
             return null;
@@ -48,7 +49,7 @@ namespace GatheringAPI.Services
                 BirthDate = data.BirthDate,
                 UserName = data.Username,
                 PhoneNumber = data.PhoneNumber,
-                Email = data.Email,
+                Email = data.Email
             };
 
             var result = await userManager.CreateAsync(user, data.Password);
@@ -63,8 +64,7 @@ namespace GatheringAPI.Services
                     Id = user.Id,
                     FirstName = user.FirstName,
                     LastName = user.LastName,
-                    Username = user.UserName,
-
+                    Username = user.UserName
                 };
             }
             foreach (var error in result.Errors)

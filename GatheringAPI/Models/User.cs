@@ -22,5 +22,7 @@ namespace GatheringAPI.Models
         public List<EventInvite> Invites { get; set; }
 
         public List<HostedEvent> HostedEvents { get; set; }
+
+        public long UpcomingDaysOut { get; set; } = 30;
     }
 }

@@ -25,7 +25,6 @@ namespace GatheringAPI.Controllers
         [HttpPost("Register")]
         public async Task<ActionResult<UserDto>> Register(RegisterData data)
         {
-            Console.WriteLine("Yes we are getting here, but not doing much");
             UserDto user = await userService.Register(data, this.ModelState);
             if(!ModelState.IsValid)
             {

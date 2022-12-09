@@ -67,7 +67,6 @@ namespace GatheringAPI.Data
                 });
         }
         public DbSet<Group> Groups { get; set; }
-
         public DbSet<EventRepeat> EventRepeats { get; set; }
         public DbSet<Event> Events { get; set; }
         public DbSet<GroupEvent> GroupEvents { get; set; }
