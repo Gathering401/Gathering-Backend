@@ -9,5 +9,7 @@
         public string Username { get; set; }
 
         public string Token { get; set; }
+
+        public long UpcomingDaysOut { get; set; }
     }
 }
