@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using GatheringAPI.Data;
-using GatheringAPI.Models;
 using GatheringAPI.Services;
 using GatheringAPI.Models.Api;
+using Microsoft.Extensions.Configuration;
+using System.Security.Claims;
+using GatheringAPI.Models;
+using System;
 
 namespace GatheringAPI.Controllers
 {
@@ -17,11 +14,15 @@ namespace GatheringAPI.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUser userService;
+        public IConfiguration Configuration { get; }
 
         public UserController(IUser userService)
         {
             this.userService = userService;
         }
+        private long UserId => long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+        // POST: api/User/Register
         [HttpPost("Register")]
         public async Task<ActionResult<UserDto>> Register(RegisterData data)
         {
@@ -32,6 +33,8 @@ namespace GatheringAPI.Controllers
             }
             return user;
         }
+
+        // POST: api/User/Login
         [HttpPost("Login")]
         public async Task<ActionResult<UserDto>> Login(LoginData data)
         {
@@ -43,5 +46,19 @@ namespace GatheringAPI.Controllers
             return user;
         }
 
+        // PUT: api/User/Preferences
+        [HttpPut("Preferences")]
+        public async Task<IActionResult> UpdatePreferences(User data)
+        {
+            if(UserId != data.Id)
+                return BadRequest();
+
+            bool DidUpdate = await userService.PutPreferences(UserId, data);
+
+            if (!DidUpdate)
+                return NotFound();
+
+            return NoContent();
+        }
     }
 }

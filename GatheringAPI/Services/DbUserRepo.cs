@@ -94,6 +94,24 @@ namespace GatheringAPI.Services
             await _context.SaveChangesAsync();
             return true;
         }
+
+        public async Task<bool> PutPreferences(long userId, User data)
+        {
+            User currentUser = await _context.Users.FindAsync(userId);
+
+            currentUser.UpcomingDaysOut = data.UpcomingDaysOut != currentUser.UpcomingDaysOut ? data.UpcomingDaysOut : currentUser.UpcomingDaysOut;
+            currentUser.LastName = data.LastName != currentUser.LastName ? data.LastName : currentUser.LastName;
+            currentUser.PhoneNumber = data.PhoneNumber != currentUser.PhoneNumber ? data.PhoneNumber : currentUser.PhoneNumber;
+
+            Console.WriteLine("This means that it's the update itself breaking");
+
+            var response = await userManager.UpdateAsync(currentUser);
+
+            if (response.Succeeded)
+                return true;
+
+            return false;
+        }
     }
 
     public interface IUser
@@ -104,6 +122,7 @@ namespace GatheringAPI.Services
 
         Task<bool> SaveStatus(EventInvite invite);
         Task<bool> SaveComment(EventComment comment);
+        Task<bool> PutPreferences(long userId, User data);
     };
 
 

@@ -7,8 +7,6 @@ using GatheringAPI.Models;
 using GatheringAPI.Models.Api;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Twilio;
-using Twilio.Rest.Api.V2010.Account;
 
 namespace GatheringAPI.Services
 {
@@ -17,13 +15,11 @@ namespace GatheringAPI.Services
         public IConfiguration Configuration { get; }
 
         private readonly GatheringDbContext _context;
-        private readonly IGroupUser guRepo;
 
-        public DbGroupRepo(GatheringDbContext context, IConfiguration configuration, IGroupUser groupUserRepo)
+        public DbGroupRepo(GatheringDbContext context, IConfiguration configuration)
         {
             _context = context;
             Configuration = configuration;
-            guRepo = groupUserRepo;
         }
 
         public async Task CreateAsync(Group group, long userId)
